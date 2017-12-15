@@ -1,0 +1,9 @@
+{
+    "filterOpts": ["subject","status","stream","issue-type","due-date","assignee"],
+    "status": ["to do", "open","in progress", "reopened", "ready for sit", "ready for prod", "resolved", "closed", "done"],
+    "stream": ["Stream_SCM","Stream_FIN"],
+    "priority": ["Highest","High","Medium","Low","Lowest"],
+    "issuetype": ["Story","Bug","Epic","Improvement","New Feature","Task","Deployment Request"],
+    "project": ["ERPOPSDEV","W3M"],
+    "orderByDirection": ["ASC","DESC"]
+}
