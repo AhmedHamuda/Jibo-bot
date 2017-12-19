@@ -6,9 +6,14 @@ const _ = require('underscore');
 const constant = require("../../constants/constants");
 
 let jira = new Jira({
-     username: process.env.JIRA_USER,
-     password: process.env.JIRA_PASSWORD
-});
+    protocol: process.env.JIRA_PROTOCOL,
+    host: process.env.JIRA_HOSTNAME,
+    username: process.env.JIRA_USER,
+    password: process.env.JIRA_PASSWORD,
+    apiVersion: process.env.JIRA_REST_API_Version,
+    port: process.env.JIRA_PORT,
+    strictSSL: false
+  });
 
 lib.dialog('getbyid', [
      (session) => {
@@ -53,20 +58,26 @@ lib.dialog('getbyid', [
 
 lib.dialog('get', [
     async (session,args, next) => {
-        const count = await jira.getCount(args);
-        if(count >= 10) {
-            Object.assign(session.dialogData, args);
-            builder.Prompts.choice(session, "looks like there is " + count + " tickets, would you like to add some additinal filters",
-            "yes|no",
-            builder.ListStyle.button);
-        } else if (count == 0) {
-            session.send("looks like there is no tickets with the search parameters!");
-        } else if (count == -1 ) {
-            session.send("Oops! an error accurd while retrieving the tickets, please try again later");
-        } 
-        else {
-            session.replaceDialog("issue:fetch", args);
+        Object.assign(session.dialogData, args);
+        try {
+            const count = await jira.getCount(session.dialogData);
+            if(count >= 10) { 
+                builder.Prompts.choice(session, "looks like there is " + count + " tickets, would you like to add some additinal filters",
+                "yes|no",
+                builder.ListStyle.button);
+            } else if (count == 0) {
+                session.send("looks like there is no tickets with the search parameters!");
+            } else if (count == -1 ) {
+                session.send("Oops! an error accurd while retrieving the tickets, please try again later");
+            } 
+            else {
+                session.replaceDialog("issue:fetch", session.dialogData);
+            }
         }
+        catch(error) {
+            session.send("Oops! an error accurd: %s, while retrieving the tickets, please try again later", error);
+        }
+        
     },
     (session, results, next) => {
         if (results.response) {
@@ -84,28 +95,29 @@ lib.dialog('get', [
 ]);
 
 lib.dialog("fetch", async (session, args) => {
-    session.sendTyping();
-    const result = await jira.fetchAll(args);
-    if (result == "error"){
-        session.send("Oops! an error accurd while retrieving the tickets, please try again later");
+    try {
+        args = args || session.dialogData;
+        session.sendTyping();
+        const result = await jira.searchJira(args);
+        let cards = _.map(result.issues, (issue,i) => {
+            const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
+            return new builder.HeroCard(session)
+                .title(issue.key)
+                .subtitle(issue.fields.summary)
+                .text(issue.fields.status.name + "\n\n" +
+                        "Assignee: " + assignee + "\n\n" +
+                        "End date: " + issue.fields.dueDate
+                    );
+        });
+        let msg = new builder.Message(session);
+        msg.text("here! ordered by date and priority!")
+        msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
+        msg.attachments(cards);
+        session.send(msg).endDialog(); //.cancelDialog("filter:/");
     }
-    let cards = _.map(result.issues, (issue,i) => {
-        const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
-        return new builder.HeroCard(session)
-            .title(issue.key)
-            .subtitle(issue.fields.summary)
-            .text(issue.fields.status.name + "\n\n" +
-                    "Assignee: " + assignee + "\n\n" +
-                    "End date: " + issue.fields.dueDate
-                );
-    });
-    let msg = new builder.Message(session);
-    msg.text("here! ordered by date and priority!")
-    msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
-    msg.attachments(cards);
-    // session.send(msg).endDialog().cancelDialog("filter:/");
-    session.conversationData = null;
-    session.endConversation(msg);
+    catch(error) {
+        session.send("Oops! an error accurd: %s, while retrieving the tickets, please try again later", error);
+    }
 });
 
 // Export createLibrary() function

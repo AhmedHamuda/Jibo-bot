@@ -1,74 +1,35 @@
 "use strict";
-const axios = require ('axios');
 const _s =  require('underscore.string');
 const _ =  require('underscore');
 const dateformat = require("dateformat");
 const project = require("./constants/constants").project;
+const JiraApi = require("jira-client");
 
-module.exports = class Jira {
-    constructor(userAuth) {
-        this.axiosInstance = axios.create({
-            baseURL: process.env.JIRA_HOSTNAME + process.env.JIRA_REST_API_PATH,
-            timeout: 10000,
-            headers: {
-                'Authorization': 'Basic ' + new Buffer(userAuth.username + ':' + userAuth.password).toString('base64'),
-                "Accept": "application/json"
-            },
-        })
-    }
+module.exports = class Jira extends JiraApi {
 
-    async getCount(args, callback) {
-        _.extend(args, {maxResult: 0});
-        const result = await this.fetchAll(args);
+    async getCount(args) {
+        _.extend(args, {maxResult: 0, fields: ["none"]});
+        const result =  await this.searchJira(args);
         if (result == "error") return result;
         return result.issues.length;
     }
 
-    async fetchAll (args, callback) {
-        let query,path, maxResult, fields, orderBy;
+    searchJira (args, options) {
+        let query, queryString, orderBy;
+        options = options ? options : {}; 
+        options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate"];
+        args.filter = args.filter || {};
         query = this.parseFilterParams(args.filter);
-        maxResult = args.maxResult ? _s.sprintf("&maxResults=%s", args.maxResult) : '';
-        fields = args.maxResult ? "&fields=none" : "&fields=id,key,summary,status,assignee,duedate";
         orderBy = "order by " + (this.parseOrderParams(args.order) || "priority ASC, duedate ASC, status ASC");
-        path = _s.sprintf("/search?jql=%s%s%s"
-                    ,encodeURIComponent(query + " " + orderBy)
-                    ,fields
-                    ,maxResult);
-       let result;
-        try {
-            result = await this.axiosInstance.get(path);
-            return result.data;
-        }
-        catch(error) {
-            //log error
-            console.log(error);
-            result = "error";
-            return result;
-        }
-        
+        queryString = _s.sprintf("%s %s", query, orderBy);
+        return super.searchJira(queryString, options);
     }
-
-    async getById(args, callback) {
-        let path = _s.sprintf("/issue/%s?fields=id,key,summary,status,dueDate,assignee"
-                    ,args.id);
-        let result;
-        try {
-            result = await this.axiosInstance.get(path);
-            return result.data;
-        }
-        catch(error) {
-            //log error
-            console.log(error);
-            result = "error";
-            return result;
-        }
-    }
-
+    
     parseFilterParams(args) {
         let paramsArray = [];
-        args.subject && paramsArray.push(_s.sprintf("summary ~ '%s*'", args.subject));
+        args.subject && paramsArray.push(_s.sprintf("(text ~ '%s*' or project = '%s')", args.subject, args.subject));
         args.assignee && paramsArray.push(_s.sprintf("assignee in (%s)", _.isArray(args.assignee) ? args.assignee.join(",") : args.assignee));
-        project && paramsArray.push(_s.sprintf("project in (%s)",  _.isArray(project) ? project.join(",") : project));
+       // project && paramsArray.push(_s.sprintf("project in (%s)",  _.isArray(project) ? project.join(",") : project));
         args.priority && paramsArray.push(_s.sprintf("priority in (%s)", args.priority));
         args.stream && paramsArray.push(_s.sprintf("labels in (%s)", args.stream));
         args.duedate && paramsArray.push(_s.sprintf("(duedate <= %s or duedate is empty)", _s.quote(dateformat(args.duedate,"yyyy/mm/dd"),"'")));
@@ -85,10 +46,10 @@ module.exports = class Jira {
 
     parseOrderParams(args) {
         let orderArray = [];
-        const orderProps = args.orderBy.length;
-        const dirOps = args.orderByDirection.length;
-        if(orderProps == dirOps) {
-            for (var i = 0; index < orderProps; i++) {
+        const orderProps = args.orderBy ? args.orderBy.length : 0;
+        const dirOps = args.orderByDirection ? args.orderByDirection.length : 0;
+        if(orderProps == dirOps && orderProps > 0) {
+            for (var i = 0; i <= orderProps; i++) {
                 orderArray.push(args.orderBy[i] + " " + args.orderByDirection[i]);
             }
         }

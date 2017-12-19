@@ -42,6 +42,25 @@ bot.dialog('/', intents
 
 bot.dialog("internal", [
     (session) => {
+        if (!session.userData.consumerKey) {
+            builder.Prompts.choice(session, 
+                "Hi "+ session.message.user.name +", I never met you before, would you like me to do task on your behalf?",
+                 "yes|no",
+                  builder.ListStyle.button);
+            }
+            else {
+                
+            }
+    },
+    (session) => {
+        if(result && result.response.entity == "yes") {
+            session.send("great! let's begin!").replaceDialog('filter:/');
+       }
+       else{
+           session.send("Understood, please type 'help' to get the user guide!").endDialog();
+       }
+    },
+    (session) => {
         builder.Prompts.choice(session, "Hi "+ session.message.user.name +", would you like me to guide you?", "yes|no", builder.ListStyle.button);
     },
     (session, result) => {
