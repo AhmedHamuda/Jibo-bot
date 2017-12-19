@@ -1,3 +1,5 @@
+"use strict";
+
 let util = require('util');
 let builder = require('botbuilder');
 let constants = require("../../../constants/constants");

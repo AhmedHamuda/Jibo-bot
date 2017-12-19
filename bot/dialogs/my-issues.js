@@ -1,3 +1,5 @@
+"use strict";
+
 const builder = require('botbuilder');
 const _ = require("underscore");
 const helpers = require("../../common/helpers");

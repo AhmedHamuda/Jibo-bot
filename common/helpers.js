@@ -1,3 +1,5 @@
+"use strict";
+
 const constant = require("../constants/constants");
 const _s = require("underscore.string");
 const chrono = require("chrono-node");
