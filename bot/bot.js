@@ -1,5 +1,3 @@
-import { connect } from "tls";
-
 "use strict";
 
 const util = require("util");
@@ -8,7 +6,7 @@ const teams = require("botbuilder-teams");
 const apiairecognizer = require('botbuilder-apiai');
 const _ = require('underscore');
 
-const JiraOAuth = require("./jira_oauth");
+const JiraOAuth = require("../jira_oauth");
 // Create chat bot 
 let connector = new teams.TeamsChatConnector({
     appId: null, //process.env.MICROSOFT_APP_ID || null,
@@ -102,4 +100,7 @@ bot.on('conversationUpdate', (message) => {
 });
 bot.endConversationAction('goodbyeAction', "Ok... See you later.", { matches: 'Goodbye' });
 
-module.exports = {connector: connector, jiraOAuth: jiraOAuth};
+module.exports = { 
+    connector: connector,
+    jiraOAuth: jiraOAuth
+};
