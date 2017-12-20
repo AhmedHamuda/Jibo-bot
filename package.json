@@ -26,6 +26,7 @@
     "file-system": "^2.2.2",
     "jira-client": "^6.4.1",
     "oauth": "^0.9.15",
+    "request": "^2.83.0",
     "restify": "^6.2.0",
     "underscore": "^1.8.3",
     "underscore.string": "^3.3.4",
