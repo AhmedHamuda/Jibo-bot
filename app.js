@@ -11,3 +11,4 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 });
 // Listen for messages from users 
 server.post('/api/bot/messages', connector.listen());
+server.get("/", () => { return "ok"});
