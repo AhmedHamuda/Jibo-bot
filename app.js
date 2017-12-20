@@ -11,4 +11,4 @@ server.listen(process.env.port || process.env.PORT || 3978, process.env.WEB_HOST
 });
 // Listen for messages from users 
 server.post('/api/bot/messages', connector.listen());
-server.get("/", () => { return "ok"});
+server.get("/", (req, res) => { res.send({ hello: 'world' }); });
