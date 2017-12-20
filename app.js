@@ -6,7 +6,7 @@ require('dotenv-extended').load();
 const restify = require("restify");
 const connector = require("./bot/bot");
 let server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, env.process.WEB_HOSTNAME, () => {
+server.listen(process.env.port || process.env.PORT || 3978, process.env.WEB_HOSTNAME, () => {
     console.log('listening to %s', server.url);
 });
 // Listen for messages from users 
