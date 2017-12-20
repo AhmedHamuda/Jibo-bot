@@ -1,3 +1,5 @@
+import { connect } from "tls";
+
 "use strict";
 
 const util = require("util");
@@ -5,11 +7,15 @@ const builder = require("botbuilder");
 const teams = require("botbuilder-teams");
 const apiairecognizer = require('botbuilder-apiai');
 const _ = require('underscore');
+
+const JiraOAuth = require("./jira_oauth");
 // Create chat bot 
 let connector = new teams.TeamsChatConnector({
     appId: null, //process.env.MICROSOFT_APP_ID || null,
     appPassword: null //process.env.MICROSOFT_APP_PASSWORD || null
 });
+
+let jiraOAuth = new JiraOAuth ();
 // this will receive nothing, you can put your tenant id in the list to listen
 connector.setAllowedTenants([]);
 // this will reset and allow to receive from any tenants
@@ -41,15 +47,13 @@ bot.dialog('/', intents
 );
 
 bot.dialog("internal", [
-    (session) => {
-        if (!session.userData.consumerKey) {
-            builder.Prompts.choice(session, 
-                "Hi "+ session.message.user.name +", I never met you before, would you like me to do task on your behalf?",
-                 "yes|no",
-                  builder.ListStyle.button);
+    (session,args, next) => {
+        if (!session.userData.accessToken) {
+                session.send("Hi "+ session.message.user.name +", I never met you before, please sign in!");
+                jiraOAuth.requestToken();
             }
             else {
-                
+                next();
             }
     },
     (session) => {
@@ -98,4 +102,4 @@ bot.on('conversationUpdate', (message) => {
 });
 bot.endConversationAction('goodbyeAction', "Ok... See you later.", { matches: 'Goodbye' });
 
-module.exports = connector;
+module.exports = {connector: connector, jiraOAuth: jiraOAuth};
