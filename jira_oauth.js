@@ -14,7 +14,8 @@ class JiraOAuth {
             "http://localhost:" + process.env.PORT + "/jira/callback", "RSA-SHA1");
 
         oauth.getOAuthRequestToken((error, oauthToken, oauthTokenSecret) => {
-            if (error) {  
+            if (error) {
+                console.log(error);
                 console.log(error.data);
                 res.send("Error getting OAuth access token");
             } else {
