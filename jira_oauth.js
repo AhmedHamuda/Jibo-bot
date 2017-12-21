@@ -7,8 +7,8 @@ class JiraOAuth {
 
     static requestToken (req, res) {
         let oauth = new OAuth(
-            process.env.JIRA_HOSTNAME + "/plugins/servlet/oauth/request-token", 
-            process.env.JIRA_HOSTNAME + "/plugins/servlet/oauth/access-token", 
+            process.env.JIRA_HOSTNAME + process.env.JIRA_PORT + "/plugins/servlet/oauth/request-token", 
+            process.env.JIRA_HOSTNAME + process.env.JIRA_PORT + "/plugins/servlet/oauth/access-token", 
             process.env.JIRA_CONSUMER_KEY,
             fs.readFileSync(process.env.PRIV_KEY_PATH, "utf8"), "1.0",
             "http://localhost:" + process.env.PORT + "/jira/callback", "RSA-SHA1");
