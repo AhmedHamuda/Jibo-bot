@@ -13,7 +13,7 @@ let connector = new teams.TeamsChatConnector({
     appPassword: null //process.env.MICROSOFT_APP_PASSWORD || null
 });
 
-let jiraOAuth = new JiraOAuth ();
+let jiraOAuth = new JiraOAuth();
 // this will receive nothing, you can put your tenant id in the list to listen
 connector.setAllowedTenants([]);
 // this will reset and allow to receive from any tenants
@@ -44,10 +44,10 @@ bot.dialog('/', intents
     })
 );
 
-bot.dialog("internal", [
+bot.dialog("authenticate", [
     (session,args, next) => {
-        if (!session.userData.accessToken) {
-                session.send("Hi "+ session.message.user.name +", I never met you before, please sign in!");
+        if (!session.conversation.accessToken) {
+                session.send("Hi "+ session.message.user.name +", please sign in to Jira before we start the conversation!");
                 jiraOAuth.requestToken();
             }
             else {
@@ -55,11 +55,11 @@ bot.dialog("internal", [
             }
     },
     (session) => {
-        if(result && result.response.entity == "yes") {
-            session.send("great! let's begin!").replaceDialog('filter:/');
+        if(session.oauth_access_token && session.oauth_access_token_secret) {
+            session.send("Hi" + session.message.user.name + "I'm Jibo, Would you like me to guide you?")
        }
        else{
-           session.send("Understood, please type 'help' to get the user guide!").endDialog();
+           session.replaceDialog("authenticate");
        }
     },
     (session) => {
@@ -93,7 +93,7 @@ bot.on('conversationUpdate', (message) => {
     if (message.membersAdded) {
         message.membersAdded.forEach((identity) => {
             if (identity.id === message.address.bot.id) {
-                bot.beginDialog(message.address, 'internal');
+                bot.beginDialog(message.address, 'authenticate');
             }
         });
     }

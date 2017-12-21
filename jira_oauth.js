@@ -3,7 +3,7 @@
 const fs = require("file-system");
 const OAuth = require("oauth").OAuth;
 
-module.exports = class JiraOAuth {
+class JiraOAuth {
 
     constructor () {
         this.oauth = new OAuth(
@@ -28,7 +28,7 @@ module.exports = class JiraOAuth {
         });
     }
 
-    callback (req, res) {
+    callback (req, res, callback) {
         this.oauth.getOAuthAccessToken(
                 req.session.oauth_token,
                 req.session.oauth_token_secret,
@@ -37,8 +37,7 @@ module.exports = class JiraOAuth {
                 if (error) {
                     console.log("error");
                     console.log(error);
-                } else {
-                    // store the access token in the session
+                } else {                    
                     req.session.oauth_access_token = oauth_access_token;
                     req.session.oauth_access_token_secret = oauth_access_token_secret;
                     res.send({
@@ -50,3 +49,6 @@ module.exports = class JiraOAuth {
         });
     }
 }
+
+let JiraOAuth = new JiraOAuth();
+module.exports = JiraOAuth;
