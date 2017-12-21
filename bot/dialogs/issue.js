@@ -7,18 +7,23 @@ let lib = new builder.Library('issue');
 const _ = require('underscore');
 const constant = require("../../constants/constants");
 
-let jira = new Jira({
-    protocol: process.env.JIRA_PROTOCOL,
-    host: process.env.JIRA_HOSTNAME,
-    username: process.env.JIRA_USER,
-    password: process.env.JIRA_PASSWORD,
-    apiVersion: process.env.JIRA_REST_API_Version,
-    port: process.env.JIRA_PORT,
-    strictSSL: false
-  });
+let jira;
 
 lib.dialog('getbyid', [
      (session) => {
+        jira  = new Jira({
+            protocol: process.env.JIRA_PROTOCOL,
+            host: process.env.JIRA_HOSTNAME,
+            username: process.env.JIRA_USER,
+            password: process.env.JIRA_PASSWORD,
+            apiVersion: process.env.JIRA_REST_API_Version,
+            port: process.env.JIRA_PORT,
+            oauth: {
+                consumer_key: process.env.JIRA_CONSUMER_KEY,
+                access_token: session.oauth_access_token
+            },
+            strictSSL: false
+          });
          session.conversationData.ticket = validateTicketNumber(session.message.text);
          if(!session.conversationData.ticket) {
             builder.Prompts.text(session, 'Sorry, what is the ticket number again?');
@@ -60,6 +65,19 @@ lib.dialog('getbyid', [
 
 lib.dialog('get', [
     async (session,args, next) => {
+        jira  = new Jira({
+            protocol: process.env.JIRA_PROTOCOL,
+            host: process.env.JIRA_HOSTNAME,
+            username: process.env.JIRA_USER,
+            password: process.env.JIRA_PASSWORD,
+            apiVersion: process.env.JIRA_REST_API_Version,
+            port: process.env.JIRA_PORT,
+            oauth: {
+                consumer_key: process.env.JIRA_CONSUMER_KEY,
+                access_token: session.oauth_access_token
+            },
+            strictSSL: false
+          });
         Object.assign(session.dialogData, args);
         try {
             const count = await jira.getCount(session.dialogData);
@@ -98,6 +116,19 @@ lib.dialog('get', [
 
 lib.dialog("fetch", async (session, args) => {
     try {
+        jira  = new Jira({
+            protocol: process.env.JIRA_PROTOCOL,
+            host: process.env.JIRA_HOSTNAME,
+            username: process.env.JIRA_USER,
+            password: process.env.JIRA_PASSWORD,
+            apiVersion: process.env.JIRA_REST_API_Version,
+            port: process.env.JIRA_PORT,
+            oauth: {
+                consumer_key: process.env.JIRA_CONSUMER_KEY,
+                access_token: session.oauth_access_token
+            },
+            strictSSL: false
+          });
         args = args || session.dialogData;
         session.sendTyping();
         const result = await jira.searchJira(args);

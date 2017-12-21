@@ -14,7 +14,7 @@ class JiraOAuth {
             "http://localhost:" + process.env.PORT + "/jira/callback", "RSA-SHA1");
     }
 
-    requestToken (req, res) {
+    static requestToken (req, res) {
         this.oauth.getOAuthRequestToken((error, oauthToken, oauthTokenSecret) => {
             if (error) {  
                 console.log(error.data);
@@ -28,7 +28,7 @@ class JiraOAuth {
         });
     }
 
-    callback (req, res, callback) {
+    static callback (req, res, callback) {
         this.oauth.getOAuthAccessToken(
                 req.session.oauth_token,
                 req.session.oauth_token_secret,
@@ -50,5 +50,5 @@ class JiraOAuth {
     }
 }
 
-let JiraOAuth = new JiraOAuth();
+//let JiraOAuth = new JiraOAuth();
 module.exports = JiraOAuth;

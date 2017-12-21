@@ -4,8 +4,8 @@ exports.__esModule = true;
 
 require('dotenv-extended').load();
 const restify = require("restify");
-const connector = require("./bot/bot").connector;
-const jiraOAuth = require("./bot/bot").jiraOAuth;
+const connector = require("./bot/bot");
+const jiraOAuth = require("./jira_oauth");
 
 let server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, process.env.WEB_HOSTNAME, () => {

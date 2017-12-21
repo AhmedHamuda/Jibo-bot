@@ -6,14 +6,12 @@ const teams = require("botbuilder-teams");
 const apiairecognizer = require('botbuilder-apiai');
 const _ = require('underscore');
 
-const JiraOAuth = require("../jira_oauth");
+const jiraOAuth = require("../jira_oauth");
 // Create chat bot 
 let connector = new teams.TeamsChatConnector({
     appId: null, //process.env.MICROSOFT_APP_ID || null,
     appPassword: null //process.env.MICROSOFT_APP_PASSWORD || null
 });
-
-let jiraOAuth = new JiraOAuth();
 // this will receive nothing, you can put your tenant id in the list to listen
 connector.setAllowedTenants([]);
 // this will reset and allow to receive from any tenants
@@ -100,7 +98,4 @@ bot.on('conversationUpdate', (message) => {
 });
 bot.endConversationAction('goodbyeAction', "Ok... See you later.", { matches: 'Goodbye' });
 
-module.exports = { 
-    connector: connector,
-    jiraOAuth: jiraOAuth
-};
+module.exports = connector;
