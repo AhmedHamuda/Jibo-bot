@@ -16,8 +16,8 @@ class JiraOAuth {
         oauth.getOAuthRequestToken((error, oauthToken, oauthTokenSecret) => {
             if (error) {
                 console.log(error);
-                console.log(error.data);
-                res.send("Error getting OAuth access token");
+                //console.log(error.data);
+                res.send(error + "Error getting OAuth access token");
             } else {
                 req.session.oa = oa;
                 req.session.oauth_token = oauthToken;
