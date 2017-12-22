@@ -18,13 +18,13 @@ class JiraOAuth {
                 //console.log(error.data);
                 res.send(error + "Error getting OAuth access token");
             } else {
-                console.log(req.session);
-                if(req.session){
-                    req.session.setDuration(24 * 60 * 60 * 1000);
-                }
                 req.session.oauth = oauth;
                 req.session.oauth_token = oauthToken;
                 req.session.oauth_token_secret = oauthTokenSecret;
+                if(req.session){
+                    req.session.setDuration(24 * 60 * 60 * 1000);
+                }
+                console.log(req.session);
                 return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
             }
         });
