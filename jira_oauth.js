@@ -19,7 +19,7 @@ class JiraOAuth {
                 //console.log(error.data);
                 res.send(error + "Error getting OAuth access token");
             } else {
-                req.session.oa = oa;
+                req.session.oauth = oauth;
                 req.session.oauth_token = oauthToken;
                 req.session.oauth_token_secret = oauthTokenSecret;
                 return res.redirect(base_url + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken);
@@ -29,13 +29,13 @@ class JiraOAuth {
 
     static callback (req, res, callback) {
         let oauth = new OAuth(
-            req.session.oa._requestUrl,
-            req.session.oa._accessUrl,
-            req.session.oa._consumerKey,
+            req.session.oauth._requestUrl,
+            req.session.oauth._accessUrl,
+            req.session.oauth._consumerKey,
             fs.readFileSync(process.env.PRIV_KEY_PATH, "utf8"),
-            req.session.oa._version,
-            req.session.oa._authorize_callback,
-            req.session.oa._signatureMethod
+            req.session.oauth._version,
+            req.session.oauth._authorize_callback,
+            req.session.oauth._signatureMethod
         );
 
         oauth.getOAuthAccessToken(
