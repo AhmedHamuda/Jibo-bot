@@ -4,7 +4,7 @@ const fs = require("file-system");
 const OAuth = require("oauth").OAuth;
 
 class JiraOAuth {
-    static requestToken (req, res) {
+    static requestToken (req, res, next) {
         let oauth = new OAuth(
             JiraOAuth.JiraURL + "/plugins/servlet/oauth/request-token", 
             JiraOAuth.JiraURL + "/plugins/servlet/oauth/access-token", 
@@ -22,12 +22,12 @@ class JiraOAuth {
                 req.session.oauth = oauth;
                 req.session.oauth_token = oauthToken;
                 req.session.oauth_token_secret = oauthTokenSecret;
-                return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken);
+                return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
             }
         });
     }
 
-    static callback (req, res, callback) {
+    static callback (req, res) {
         let oauth = new OAuth(
             req.session.oauth._requestUrl,
             req.session.oauth._accessUrl,

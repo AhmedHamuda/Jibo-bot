@@ -21,12 +21,7 @@ server.listen(process.env.port || process.env.PORT || 3978, process.env.WEB_HOST
     console.log('listening to %s', server.url);
 });
 // Listen for messages from users 
-server.post('/api/bot/messages', connector.listen());
-server.get("/api/jira/callback", (req,res) => {
-    console.log(req.session);
-    jiraOAuth.callback(req,res);
-});
-server.get("/api/jira/tokenRequest", (req,res) => {
-    jiraOAuth.requestToken(req, res);
-});
+server.post('/api/bot/messages', connector.listen);
+server.get("/api/jira/callback", jiraOAuth.callback);
+server.get("/api/jira/tokenRequest", jiraOAuth.requestToken);
 server.get("/", (req, res) => { res.send({ hello: 'world' }); });
