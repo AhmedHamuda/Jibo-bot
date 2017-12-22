@@ -28,6 +28,7 @@ class JiraOAuth {
     }
 
     static callback (req, res) {
+        console.log(req.session);
         let oauth = new OAuth(
             req.session.oauth._requestUrl,
             req.session.oauth._accessUrl,
