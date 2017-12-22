@@ -24,6 +24,7 @@ class JiraOAuth {
                 if(req.session){
                     req.session.setDuration(24 * 60 * 60 * 1000);
                 }
+                req.session.save()
                 console.log(req.session);
                 return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
             }
