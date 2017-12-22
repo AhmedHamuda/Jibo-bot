@@ -4,11 +4,10 @@ const fs = require("file-system");
 const OAuth = require("oauth").OAuth;
 
 class JiraOAuth {
-
     static requestToken (req, res) {
         let oauth = new OAuth(
-            process.env.JIRA_PROTOCOL + "://" + process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/request-token", 
-            process.env.JIRA_PROTOCOL + "://" + process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/access-token", 
+            JiraOAuth.JiraURL + "/plugins/servlet/oauth/request-token", 
+            JiraOAuth.JiraURL + "/plugins/servlet/oauth/access-token", 
             process.env.JIRA_CONSUMER_KEY,
             fs.readFileSync(process.env.PRIV_KEY_PATH, "utf8"), "1.0",
             process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + process.env.PORT + "/api/jira/callback", "RSA-SHA1");
@@ -23,7 +22,7 @@ class JiraOAuth {
                 req.session.oauth = oauth;
                 req.session.oauth_token = oauthToken;
                 req.session.oauth_token_secret = oauthTokenSecret;
-                return res.redirect(base_url + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken);
+                return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken);
             }
         });
     }
@@ -60,4 +59,5 @@ class JiraOAuth {
     }
 }
 
+JiraOAuth.JiraURL = process.env.JIRA_PROTOCOL + "://" + process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT;
 module.exports = JiraOAuth;
