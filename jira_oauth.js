@@ -19,6 +19,9 @@ class JiraOAuth {
                 res.send(error + "Error getting OAuth access token");
             } else {
                 console.log(req.session);
+                if(req.session){
+                    req.session.setDuration(24 * 60 * 60 * 1000);
+                }
                 req.session.oauth = oauth;
                 req.session.oauth_token = oauthToken;
                 req.session.oauth_token_secret = oauthTokenSecret;
@@ -47,7 +50,10 @@ class JiraOAuth {
                 if (error) {
                     console.log("error");
                     console.log(error);
-                } else {                    
+                } else {
+                    if(req.session){
+                        req.session.setDuration(24 * 60 * 60 * 1000);
+                    }
                     req.session.oauth_access_token = oauth_access_token;
                     req.session.oauth_access_token_secret = oauth_access_token_secret;
                     res.send({
