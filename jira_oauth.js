@@ -7,11 +7,11 @@ class JiraOAuth {
 
     static requestToken (req, res) {
         let oauth = new OAuth(
-            process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/request-token", 
-            process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/access-token", 
+            process.env.JIRA_PROTOCOL + "://" + process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/request-token", 
+            process.env.JIRA_PROTOCOL + "://" + process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/access-token", 
             process.env.JIRA_CONSUMER_KEY,
             fs.readFileSync(process.env.PRIV_KEY_PATH, "utf8"), "1.0",
-            process.env.JIRA_HOSTNAME + ":" + process.env.PORT + "/jira/callback", "RSA-SHA1");
+            process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + process.env.PORT + "/api/jira/callback", "RSA-SHA1");
 
         oauth.getOAuthRequestToken((error, oauthToken, oauthTokenSecret) => {
             if (error) {
@@ -29,11 +29,14 @@ class JiraOAuth {
 
     static callback (req, res, callback) {
         let oauth = new OAuth(
-            process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/request-token", 
-            process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT + "/plugins/servlet/oauth/access-token", 
-            process.env.JIRA_CONSUMER_KEY,
-            fs.readFileSync(process.env.PRIV_KEY_PATH, "utf8"), "1.0",
-            process.env.JIRA_HOSTNAME + ":" + process.env.PORT + "/jira/callback", "RSA-SHA1");
+            req.session.oa._requestUrl,
+            req.session.oa._accessUrl,
+            req.session.oa._consumerKey,
+            fs.readFileSync(process.env.PRIV_KEY_PATH, "utf8"),
+            req.session.oa._version,
+            req.session.oa._authorize_callback,
+            req.session.oa._signatureMethod
+        );
 
         oauth.getOAuthAccessToken(
                 req.session.oauth_token,
