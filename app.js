@@ -9,7 +9,7 @@ const connector = require("./bot/bot");
 const jiraOAuth = require("./jira_oauth");
 
 let server = restify.createServer();
-server.use(restify.bodyParser());
+//server.use(restify.bodyParser());
 server.use(sessions({
     cookieName: "session",
     secret: "GDSHR2rwaf32",
