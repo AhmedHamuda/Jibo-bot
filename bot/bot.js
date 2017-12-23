@@ -44,7 +44,7 @@ bot.dialog('/', intents
 
 bot.dialog("authenticate", [
     (session,args, next) => {
-        if (!session.userData.access.token) {
+        if (!session.userData.access || !session.userData.access.token) {
                 session.send("Hi "+ session.message.user.name +", please sign in to Jira before we start the conversation!");
                 jiraOAuth.requestToken();
             }
