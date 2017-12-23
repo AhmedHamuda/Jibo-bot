@@ -21,10 +21,12 @@ class JiraOAuth {
                 req.session.oauth = oauth;
                 req.session.oauth_token = oauthToken;
                 req.session.oauth_token_secret = oauthTokenSecret;
+                /*
                 if(req.session){
                     req.session.setDuration(24 * 60 * 60 * 1000);
                 }
-                req.session.save()
+                */
+                req.session.save();
                 console.log(req.session);
                 return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
             }
@@ -57,11 +59,14 @@ class JiraOAuth {
                     }
                     req.session.oauth_access_token = oauth_access_token;
                     req.session.oauth_access_token_secret = oauth_access_token_secret;
+                    req.session.save();
                     res.send({
                         message: "successfully authenticated.",
                         access_token: oauth_access_token,
                         secret: oauth_access_token_secret
                     });
+
+                    return res.redirect("/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
                 }
         });
     }
