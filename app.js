@@ -9,7 +9,10 @@ const connector = require("./bot/bot");
 const jiraOAuth = require("./jira_oauth");
 
 let server = restify.createServer();
-//server.use(restify.bodyParser());
+server.use(restify.plugins.acceptParser(server.acceptable));
+server.use(restify.plugins.queryParser());
+server.use(restify.plugins.bodyParser());
+
 server.use(sessions({
     cookieName: "session",
     secret: "GDSHR2rwaf32",
@@ -21,7 +24,7 @@ server.listen(process.env.port || process.env.PORT || 3978, process.env.WEB_HOST
     console.log('listening to %s', server.url);
 });
 // Listen for messages from users 
-server.post('/api/bot/messages', connector.listen);
+server.post('/api/bot/messages', connector.listen());
 server.get("/api/jira/callback", jiraOAuth.callback);
 server.get("/api/jira/tokenRequest", jiraOAuth.requestToken);
 server.get("/", (req, res) => { res.send({ hello: 'world' }); });
