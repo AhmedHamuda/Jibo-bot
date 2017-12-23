@@ -6,7 +6,7 @@ const teams = require("botbuilder-teams");
 const apiairecognizer = require('botbuilder-apiai');
 const _ = require('underscore');
 
-const jiraOAuth = require("../jira_oauth");
+const botURL = process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + process.env.PORT;
 // Create chat bot 
 let connector = new teams.TeamsChatConnector({
     appId: null, //process.env.MICROSOFT_APP_ID || null,
@@ -22,8 +22,8 @@ let bot = new builder.UniversalBot(connector, {
     }
 });
 
-var recognizer = new apiairecognizer(process.env.APIAI_CLIENT_TOKEN);
-var intents = new builder.IntentDialog({
+let recognizer = new apiairecognizer(process.env.APIAI_CLIENT_TOKEN);
+let intents = new builder.IntentDialog({
      recognizers: [recognizer]
 });
 
@@ -32,9 +32,12 @@ bot.dialog('/', intents
     .matches("search_personalized", "my-issues:/")
     .matches("help", "help:/")
     .onDefault((session, args) => {
-        var fulfillment = builder.EntityRecognizer.findEntity(args.entities, 'fulfillment'); 
+        if (!args) {
+            session.replaceDialog("welcome");
+        }
+        let fulfillment = builder.EntityRecognizer.findEntity(args.entities, 'fulfillment'); 
         if (fulfillment){ 
-            var speech = fulfillment.entity; 
+            let speech = fulfillment.entity; 
             session.send(speech); 
         }else{ 
             session.send('Sorry...not sure how to respond to that');    
@@ -45,12 +48,21 @@ bot.dialog('/', intents
 bot.dialog("authenticate", [
     (session,args, next) => {
         if (!session.userData.access || !session.userData.access.token) {
-                session.send("Hi "+ session.message.user.name +", please sign in to Jira before we start the conversation!");
-                jiraOAuth.requestToken();
-            }
-            else {
-                next();
-            }
+            let signIn = new builder.HeroCard(session)
+                    .text("Please sign-in to Jira")
+                    .buttons([
+                        builder.CardAction.openUrl(session, botURL + "/api/jira/tokenRequest", "Sign-in"),
+                        builder.CardAction.dialogAction(session, "goodbye", null, "Cancel")
+                    ]);
+
+            let msg = new builder.Message(session);
+            msg.text("Hi "+ session.message.user.name + ", I cannot recognize you.")
+            msg.attachments([signIn]);
+            session.send(msg);
+        }
+        else {
+            next();
+        }
     },
     (session) => {
         if(session.oauth_access_token && session.oauth_access_token_secret) {
@@ -58,23 +70,27 @@ bot.dialog("authenticate", [
                 token: session.oauth_access_token,
                 secret: session.oauth_access_token_secret
             };
+            session.replaceDialog("/");
             session.send("Hi" + session.message.user.name + "I'm Jibo, Would you like me to guide you?")
        }
        else{
            session.replaceDialog("authenticate");
        }
-    },
+    }
+]);
+
+bot.dialog("welcome", [
     (session) => {
         builder.Prompts.choice(session, "Hi "+ session.message.user.name +", would you like me to guide you?", "yes|no", builder.ListStyle.button);
     },
     (session, result) => {
         if(result && result.response.entity == "yes") {
-             session.send("great! let's begin!").replaceDialog('filter:/');
+            session.send("great! let's begin!").replaceDialog('filter:/');
         }
         else{
             session.send("Understood, please type 'help' to get the user guide!").endDialog();
         }
-    },
+    }
 ]);
 
 // Sub-Dialogs
@@ -100,6 +116,6 @@ bot.on('conversationUpdate', (message) => {
         });
     }
 });
-bot.endConversationAction('goodbyeAction', "Ok... See you later.", { matches: 'Goodbye' });
+bot.endConversationAction('goodbye', "Ok... See you later.", { matches: 'Goodbye' });
 
 module.exports = connector;

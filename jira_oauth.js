@@ -2,6 +2,7 @@
 
 const fs = require("file-system");
 const OAuth = require("oauth").OAuth;
+const Cookies = require("cookies");
 
 class JiraOAuth {
     static requestToken (req, res, next) {
@@ -18,22 +19,29 @@ class JiraOAuth {
                 //console.log(error.data);
                 res.send(error + "Error getting OAuth access token");
             } else {
-                req.session.oauth = oauth;
-                req.session.oauth_token = oauthToken;
-                req.session.oauth_token_secret = oauthTokenSecret;
-                /*
                 if(req.session){
                     req.session.setDuration(24 * 60 * 60 * 1000);
                 }
-                */
-                req.session.save();
+                req.session.oauth = oauth;
+                req.session.oauth_token = oauthToken;
+                req.session.oauth_token_secret = oauthTokenSecret;
+                
+                let cookies = new Cookies(req, res);
+                cookies.set("sessions", req.session);
+
                 console.log(req.session);
+                //res.writeHead(302);
+
                 return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
+
             }
         });
     }
 
     static callback (req, res) {
+        let cookies = new Cookies(req, res);
+        req.session = cookies.get("sessions");
+
         console.log(req.session);
         let oauth = new OAuth(
             req.session.oauth._requestUrl,
@@ -54,23 +62,27 @@ class JiraOAuth {
                     console.log("error");
                     console.log(error);
                 } else {
+                    
+                    req.session.oauth_access_token = oauth_access_token;
+                    req.session.oauth_access_token_secret = oauth_access_token_secret;
                     if(req.session){
                         req.session.setDuration(24 * 60 * 60 * 1000);
                     }
-                    req.session.oauth_access_token = oauth_access_token;
-                    req.session.oauth_access_token_secret = oauth_access_token_secret;
-                    req.session.save();
+                    if (req.session.save) {
+                        req.session.save();
+                    }
                     res.send({
                         message: "successfully authenticated.",
                         access_token: oauth_access_token,
                         secret: oauth_access_token_secret
                     });
 
-                    return res.redirect("/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
+                    return res.redirect(JiraOAuth.BotURL + "/api/bot/messages", next);
                 }
         });
     }
 }
 
 JiraOAuth.JiraURL = process.env.JIRA_PROTOCOL + "://" + process.env.JIRA_HOSTNAME + ":" + process.env.JIRA_PORT;
+JiraOAuth.BotURL = process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + process.env.PORT;
 module.exports = JiraOAuth;
