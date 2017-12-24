@@ -2,7 +2,6 @@
 
 const fs = require("file-system");
 const OAuth = require("oauth").OAuth;
-const Cookies = require("cookies");
 
 class JiraOAuth {
     static requestToken (req, res, next) {
@@ -19,19 +18,17 @@ class JiraOAuth {
                 //console.log(error.data);
                 res.send(error + "Error getting OAuth access token");
             } else {
+                /*
                 if(req.session){
                     req.session.setDuration(24 * 60 * 60 * 1000);
                 }
+                */
                 req.session.oauth = oauth;
                 req.session.oauth_token = oauthToken;
                 req.session.oauth_token_secret = oauthTokenSecret;
                 
-                let cookies = new Cookies(req, res);
-                cookies.set("sessions", req.session);
-
                 console.log(req.session);
                 //res.writeHead(302);
-
                 return res.redirect(JiraOAuth.JiraURL + "/plugins/servlet/oauth/authorize?oauth_token=" + oauthToken, next);
 
             }
@@ -39,9 +36,10 @@ class JiraOAuth {
     }
 
     static callback (req, res) {
+        /*
         let cookies = new Cookies(req, res);
         req.session = cookies.get("sessions");
-
+        */
         console.log(req.session);
         let oauth = new OAuth(
             req.session.oauth._requestUrl,
@@ -65,12 +63,14 @@ class JiraOAuth {
                     
                     req.session.oauth_access_token = oauth_access_token;
                     req.session.oauth_access_token_secret = oauth_access_token_secret;
+                    /*
                     if(req.session){
                         req.session.setDuration(24 * 60 * 60 * 1000);
                     }
                     if (req.session.save) {
                         req.session.save();
                     }
+                    */
                     res.send({
                         message: "successfully authenticated.",
                         access_token: oauth_access_token,

@@ -28,6 +28,7 @@
     "oauth": "^0.9.15",
     "request": "^2.83.0",
     "restify": "^6.2.0",
+    "restify-session": "^1.1.1",
     "underscore": "^1.8.3",
     "underscore.string": "^3.3.4",
     "uuid": "^3.1.0"
