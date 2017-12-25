@@ -125,7 +125,7 @@ lib.dialog("fetch", async (session, args) => {
             port: process.env.JIRA_PORT,
             oauth: {
                 consumer_key: process.env.JIRA_CONSUMER_KEY,
-                access_token: session.oauth_access_token
+                access_token: session.userData.access.oauth_access_token
             },
             strictSSL: false
           });

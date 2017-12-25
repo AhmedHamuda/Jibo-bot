@@ -4,11 +4,13 @@ const util = require("util");
 const builder = require("botbuilder");
 const teams = require("botbuilder-teams");
 const apiairecognizer = require('botbuilder-apiai');
-const _ = require('underscore');
-
-const botURL = process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + process.env.PORT;
+const redis = require("redis");
+const RedisStorage = require("botbuilder-redis-storage");
+// Redis client
+const redisClient = redis.createClient(process.env.REDIS_PORT, process.env.REDIS_HOST, {prefix: "bot-storage:" });
+const storage = new RedisStorage(redisClient);
 // Create chat bot 
-let connector = new teams.TeamsChatConnector({
+const connector = new teams.TeamsChatConnector({
     appId: null, //process.env.MICROSOFT_APP_ID || null,
     appPassword: null //process.env.MICROSOFT_APP_PASSWORD || null
 });
@@ -16,14 +18,15 @@ let connector = new teams.TeamsChatConnector({
 connector.setAllowedTenants([]);
 // this will reset and allow to receive from any tenants
 connector.resetAllowedTenants();
-let bot = new builder.UniversalBot(connector, {
+const bot = new builder.UniversalBot(connector, {
     localizerSettings: { 
         defaultLocale: "en" 
     }
 });
+bot.set("storage", storage);
 
-let recognizer = new apiairecognizer(process.env.APIAI_CLIENT_TOKEN);
-let intents = new builder.IntentDialog({
+const recognizer = new apiairecognizer(process.env.APIAI_CLIENT_TOKEN);
+const intents = new builder.IntentDialog({
      recognizers: [recognizer]
 });
 
@@ -45,55 +48,9 @@ bot.dialog('/', intents
     })
 );
 
-bot.dialog("authenticate", [
-    (session,args, next) => {
-        if (!session.userData.access || !session.userData.access.token) {
-            let signIn = new builder.HeroCard(session)
-                    .text("Please sign-in to Jira")
-                    .buttons([
-                        builder.CardAction.openUrl(session, botURL + "/api/jira/tokenRequest", "Sign-in"),
-                        builder.CardAction.dialogAction(session, "goodbye", null, "Cancel")
-                    ]);
-
-            let msg = new builder.Message(session);
-            msg.text("Hi "+ session.message.user.name + ", I cannot recognize you.")
-            msg.attachments([signIn]);
-            session.send(msg);
-        }
-        else {
-            next();
-        }
-    },
-    (session) => {
-        if(session.oauth_access_token && session.oauth_access_token_secret) {
-            session.userData.access = {
-                token: session.oauth_access_token,
-                secret: session.oauth_access_token_secret
-            };
-            session.replaceDialog("/");
-            session.send("Hi" + session.message.user.name + "I'm Jibo, Would you like me to guide you?")
-       }
-       else{
-           session.replaceDialog("authenticate");
-       }
-    }
-]);
-
-bot.dialog("welcome", [
-    (session) => {
-        builder.Prompts.choice(session, "Hi "+ session.message.user.name +", would you like me to guide you?", "yes|no", builder.ListStyle.button);
-    },
-    (session, result) => {
-        if(result && result.response.entity == "yes") {
-            session.send("great! let's begin!").replaceDialog('filter:/');
-        }
-        else{
-            session.send("Understood, please type 'help' to get the user guide!").endDialog();
-        }
-    }
-]);
-
 // Sub-Dialogs
+bot.library(require('./dialogs/auth').createLibrary());
+bot.library(require('./dialogs/welcome').createLibrary());
 bot.library(require('./dialogs/filter').createLibrary());
 bot.library(require('./dialogs/text-search').createLibrary());
 bot.library(require('./dialogs/issue').createLibrary());
@@ -111,11 +68,11 @@ bot.on('conversationUpdate', (message) => {
     if (message.membersAdded) {
         message.membersAdded.forEach((identity) => {
             if (identity.id === message.address.bot.id) {
-                bot.beginDialog(message.address, 'authenticate');
+                bot.beginDialog(message.address, 'auth:authenticate', message.address);
             }
         });
     }
 });
 bot.endConversationAction('goodbye', "Ok... See you later.", { matches: 'Goodbye' });
 
-module.exports = connector;
+module.exports = {bot: bot, connector: connector};
