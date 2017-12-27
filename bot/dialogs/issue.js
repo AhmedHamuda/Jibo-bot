@@ -2,27 +2,19 @@
 
 const util = require('util');
 const builder = require('botbuilder');
-const Jira = require("../../jira");
-let lib = new builder.Library('issue');
+const Jira = require("../../jira/jira");
+const lib = new builder.Library('issue');
 const _ = require('underscore');
-const constant = require("../../constants/constants");
 
 let jira;
 
 lib.dialog('getbyid', [
      (session) => {
         jira  = new Jira({
-            protocol: process.env.JIRA_PROTOCOL,
-            host: process.env.JIRA_HOSTNAME,
-            username: process.env.JIRA_USER,
-            password: process.env.JIRA_PASSWORD,
-            apiVersion: process.env.JIRA_REST_API_Version,
-            port: process.env.JIRA_PORT,
             oauth: {
-                consumer_key: process.env.JIRA_CONSUMER_KEY,
-                access_token: session.oauth_access_token
-            },
-            strictSSL: false
+                access_token: session.userData.oauth.accessToken,
+                access_token_secret: session.userData.oauth.accessTokenSecret,
+            }
           });
          session.conversationData.ticket = validateTicketNumber(session.message.text);
          if(!session.conversationData.ticket) {
@@ -66,19 +58,13 @@ lib.dialog('getbyid', [
 lib.dialog('get', [
     async (session,args, next) => {
         jira  = new Jira({
-            protocol: process.env.JIRA_PROTOCOL,
-            host: process.env.JIRA_HOSTNAME,
-            username: process.env.JIRA_USER,
-            password: process.env.JIRA_PASSWORD,
-            apiVersion: process.env.JIRA_REST_API_Version,
-            port: process.env.JIRA_PORT,
             oauth: {
-                consumer_key: process.env.JIRA_CONSUMER_KEY,
-                access_token: session.oauth_access_token
-            },
-            strictSSL: false
+                access_token: session.userData.oauth.accessToken,
+                access_token_secret: session.userData.oauth.accessTokenSecret,
+            }
           });
         Object.assign(session.dialogData, args);
+        Object.assign(session.dialogData.filter.project, session.userData.projects)
         try {
             const count = await jira.getCount(session.dialogData);
             if(count >= 10) { 
@@ -117,19 +103,12 @@ lib.dialog('get', [
 lib.dialog("fetch", async (session, args) => {
     try {
         jira  = new Jira({
-            protocol: process.env.JIRA_PROTOCOL,
-            host: process.env.JIRA_HOSTNAME,
-            username: process.env.JIRA_USER,
-            password: process.env.JIRA_PASSWORD,
-            apiVersion: process.env.JIRA_REST_API_Version,
-            port: process.env.JIRA_PORT,
             oauth: {
-                consumer_key: process.env.JIRA_CONSUMER_KEY,
-                access_token: session.userData.access.oauth_access_token
-            },
-            strictSSL: false
+                access_token: session.userData.oauth.accessToken,
+                access_token_secret: session.userData.oauth.accessTokenSecret,
+            }
           });
-        args = args || session.dialogData;
+        args = Object.assign(args || session.dialogData, session.userData.projects);
         session.sendTyping();
         const result = await jira.searchJira(args);
         let cards = _.map(result.issues, (issue,i) => {

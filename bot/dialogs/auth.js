@@ -9,7 +9,7 @@ const botURL = process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + proce
 
 lib.dialog("authenticate", 
     (session,args, next) => {
-        if (!session.userData.oauth || !session.userData.oauth.accessToken) {
+        if (!session.userData.oauth || !session.userData.oauth.accessToken || !session.userData.oauth.accessTokenSecret) {
             console.log(args);
             let signIn = new builder.HeroCard(session)
                     .text("Please sign-in to Jira")

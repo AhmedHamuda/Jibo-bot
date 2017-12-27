@@ -1,16 +1,17 @@
 "use strict";
 
-let util = require('util');
-let builder = require('botbuilder');
-let constants = require("../../constants/constants");
-let lib = new builder.Library('priority');
-let _ =  require('underscore');
+const builder = require('botbuilder');
+const Jira = require("../../jira/jira");
+const lib = new builder.Library('priority');
+const _ = require("underscore");
 
 lib.dialog('ask', [ 
     (session) => {
-        session.conversationData.priority = session.conversationData.priority || [];
+        if(!args || !args.redo) {
+            session.conversationData.priority = [];
+        }
         builder.Prompts.choice(session,"please choose a priority:",
-                _.difference(constants.priority, session.conversationData.priority),
+                _.difference(session.conversationData.priorities, session.conversationData.priority),
                 builder.ListStyle.button);
     },
     (session, results) => {
@@ -24,10 +25,49 @@ lib.dialog('ask', [
             session.replaceDialog("priority:ask");
         }
         else{
-            session.endDialogWithResult(session.conversationData.priority); 
+            session.endDialog(); 
         }
     }
 ]);
+
+lib.dialog('check', 
+    (session, args) => {
+        if(args) {
+            session.conversationData.priority = session.conversationData.priority || [];
+            let original = _.map(session.conversationData.priorities, (priority) => {return priority.toLowerCase();});
+            args = _.map(args, (priority) => {return priority.toLowerCase();});
+            const diff = _.difference(args, original);
+            if (diff) {
+                session.send("Requested priorities "+ diff.join(", ") +" are not available in Jira");
+                session.conversationData.priority = _.intersection(args, original) || [];
+                session.replaceDialog("priority:ask", {redo: true});
+            } else {
+                session.conversationData.priority = args;
+                session.endDialog();
+            }
+        } else {
+            session.endDialog();
+        }
+});
+
+lib.dialog('list', 
+    async (session) => {
+        try {
+            let jira = new Jira({
+                oauth: {
+                    access_token: session.userData.oauth.accessToken,
+                    access_token_secret: session.userData.oauth.accessTokenSecret,
+                }
+            });
+        
+            const priorities = await jira.listPriorities();
+            session.conversationData.priorities =  _.map(priorities, (priority) => { return priority.name;});
+            session.endDialog();
+        }
+        catch(error) {
+            session.send("Oops! an error accurd: %s, while retrieving the projects, please try again later", error);
+        } 
+    });
 
 // Export createLibrary() function
 module.exports.createLibrary =  () => {

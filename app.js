@@ -5,8 +5,9 @@ exports.__esModule = true;
 require('dotenv-extended').load();
 const restify = require("restify");
 const connector = require("./bot/bot").connector;
-const jiraOAuth = require("./jira_oauth");
-const sessions = require("./restify_session") 
+const jiraOAuth = require("./jira/jira_oauth");
+const jiraWebhook = require("./jira/jira_webhook");
+const sessions = require("./ext/restify_session") 
 const session = new sessions({
     debug: true,
     persist: true,
@@ -40,5 +41,5 @@ server.listen(process.env.port || process.env.PORT || 3978, process.env.WEB_HOST
 server.get("/", (req, res) => { res.send({ hello: 'world' }); });
 server.get("/api/jira/tokenRequest", jiraOAuth.requestToken);
 server.get("/api/jira/callback", jiraOAuth.callback);
-//server.get({name: "callback", path: "/api/jira/test"}, connector.listen());
+server.post('/api/jira/webhook', jiraWebhook.webhook);
 server.post('/api/bot/messages', connector.listen());

@@ -35,9 +35,6 @@ bot.dialog('/', intents
     .matches("search_personalized", "my-issues:/")
     .matches("help", "help:/")
     .onDefault((session, args) => {
-        if (!args) {
-            session.replaceDialog("welcome");
-        }
         let fulfillment = builder.EntityRecognizer.findEntity(args.entities, 'fulfillment'); 
         if (fulfillment){ 
             let speech = fulfillment.entity; 
@@ -59,6 +56,7 @@ bot.library(require('./dialogs/labels/stream').createLibrary());
 bot.library(require('./dialogs/due-date').createLibrary());
 bot.library(require('./dialogs/status').createLibrary());
 bot.library(require('./dialogs/priority').createLibrary());
+bot.library(require('./dialogs/project').createLibrary());
 bot.library(require('./dialogs/subject').createLibrary());
 bot.library(require('./dialogs/assignee').createLibrary());
 bot.library(require('./dialogs/my-issues').createLibrary());
