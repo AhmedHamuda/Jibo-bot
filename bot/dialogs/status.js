@@ -39,7 +39,7 @@ lib.dialog('check',
                 args = _.map(args, (status) => {return status.toLowerCase();});
                 const diff = _.difference(args, original);
                 if (diff) {
-                    session.send("Requested statuses "+ diff.join(", ") +" are not available in Jira");
+                    session.send("Requested statuses ("+ diff.join(", ") +") are not available in Jira");
                     session.conversationData.status = _.intersection(args, original) || [];
                     session.replaceDialog("status:ask", {redo: true});
                 } else {
@@ -71,7 +71,7 @@ lib.dialog('list',
         }
         catch(error) {
             session.send("Oops! an error accurd: %s, while retrieving the statuses, please try again later", error);
-        } 
+        }
     });
 
 

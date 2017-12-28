@@ -43,8 +43,7 @@ module.exports = class Jira extends JiraApi {
         let query, queryString, orderBy;
         options = options ? options : {}; 
         options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate"];
-        args.filter = args.filter || {};
-        query = this.parseFilterParams(args.filter);
+        query = this.parseFilterParams(args);
         orderBy = "order by " + (this.parseOrderParams(args.order) || "priority ASC, duedate ASC, status ASC");
         queryString = _s.sprintf("%s %s", query, orderBy);
         return super.searchJira(queryString, options);
@@ -54,7 +53,11 @@ module.exports = class Jira extends JiraApi {
         let paramsArray = [];
         args.subject && paramsArray.push(_s.sprintf("(text ~ '%s*' or project = '%s')", args.subject, args.subject));
         args.assignee && paramsArray.push(_s.sprintf("assignee in (%s)", _.isArray(args.assignee) ? args.assignee.join(",") : args.assignee));
-        args.project && paramsArray.push(_s.sprintf("project in (%s)",  _.isArray( args.project) ?  args.project.join(",") :  args.project));
+        if(args.project) {
+            paramsArray.push(_s.sprintf("project in (%s)",  _.isArray(args.project) ? args.project.join(",") :  args.project));
+        }else {
+            paramsArray.push(_s.sprintf("project in (%s)", args.projects.join(",")));
+        }
         args.priority && paramsArray.push(_s.sprintf("priority in (%s)", args.priority));
         args.stream && paramsArray.push(_s.sprintf("labels in (%s)", args.stream));
         args.duedate && paramsArray.push(_s.sprintf("(duedate <= %s or duedate is empty)", _s.quote(dateformat(args.duedate,"yyyy/mm/dd"),"'")));

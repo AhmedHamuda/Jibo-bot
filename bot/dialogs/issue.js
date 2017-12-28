@@ -70,9 +70,11 @@ lib.dialog('get', [
                     access_token_secret: session.userData.oauth.accessTokenSecret,
                 }
             });
+            /*
             Object.assign(session.dialogData, args);
             Object.assign(session.dialogData.filter.project, session.userData.projects)
-            const count = await jira.getCount(session.dialogData);
+            */
+            const count = await jira.getCount(session.conversationData);
             if(count >= 10) { 
                 builder.Prompts.choice(session, "looks like there is " + count + " tickets, would you like to add some additinal filters",
                 "yes|no",
@@ -83,7 +85,7 @@ lib.dialog('get', [
                 session.send("Oops! an error accurd while retrieving the tickets, please try again later");
             } 
             else {
-                session.replaceDialog("issue:fetch", session.dialogData);
+                session.replaceDialog("issue:fetch", session.conversationData);
             }
         }
         catch(error) {
@@ -94,14 +96,14 @@ lib.dialog('get', [
     (session, results, next) => {
         if (results.response) {
             if(results.response.entity == "yes") {
-                session.replaceDialog("filter:/", session.dialogData);
+                session.replaceDialog("filter:/", session.conversationData);
             }
             else{
-                session.replaceDialog("issue:fetch", session.dialogData);
+                session.replaceDialog("issue:fetch", session.conversationData);
             }
         }
         else {
-            session.replaceDialog("issue:fetch", session.dialogData);
+            session.replaceDialog("issue:fetch", session.conversationData);
         }
     },
 ]);
@@ -115,9 +117,9 @@ lib.dialog("fetch", async (session, args) => {
                 access_token_secret: session.userData.oauth.accessTokenSecret,
             }
           });
-        args = Object.assign(args || session.dialogData, session.userData.projects);
+        //args = Object.assign(args || session.dialogData, session.userData.projects);
         session.sendTyping();
-        const result = await jira.searchJira(args);
+        const result = await jira.searchJira(session.conversationData);
         let cards = _.map(result.issues, (issue,i) => {
             const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
             return new builder.HeroCard(session)

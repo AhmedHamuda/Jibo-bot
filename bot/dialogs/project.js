@@ -24,6 +24,6 @@ lib.dialog('list',
     });
 
 // Export createLibrary() function
-module.exports.createLibrary =  () => {
+module.exports.createLibrary = () => {
     return lib.clone();
 };

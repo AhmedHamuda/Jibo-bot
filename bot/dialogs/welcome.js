@@ -1,9 +1,9 @@
 "use strict";
 
-let util = require('util');
-let builder = require('botbuilder');
+const util = require('util');
+const builder = require('botbuilder');
 
-let lib = new builder.Library('welcome');
+const lib = new builder.Library('welcome');
 
 lib.dialog("welcome", [
     (session, args, next) => {
@@ -14,6 +14,9 @@ lib.dialog("welcome", [
     },
     (session, args) => {
         session.beginDialog("priority:list");
+    },
+    (session, args) => {
+        session.beginDialog("issue-type:list");
     },
     (session, args) => {
         builder.Prompts.choice(session, "Welcome "+ session.message.user.name +"! would you like me to guide you?", "yes|no", builder.ListStyle.button);

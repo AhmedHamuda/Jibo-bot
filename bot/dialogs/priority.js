@@ -39,7 +39,7 @@ lib.dialog('check',
             args = _.map(args, (priority) => {return priority.toLowerCase();});
             const diff = _.difference(args, original);
             if (diff) {
-                session.send("Requested priorities "+ diff.join(", ") +" are not available in Jira");
+                session.send("Requested priorities ("+ diff.join(", ") +") are not available in Jira");
                 session.conversationData.priority = _.intersection(args, original) || [];
                 session.replaceDialog("priority:ask", {redo: true});
             } else {
