@@ -32,7 +32,8 @@ lib.dialog('ask', [
 
 lib.dialog('check', 
     (session, args) => {
-        if(args) {
+    if(args) {
+        try {
             session.conversationData.priority = session.conversationData.priority || [];
             let original = _.map(session.conversationData.priorities, (priority) => {return priority.toLowerCase();});
             args = _.map(args, (priority) => {return priority.toLowerCase();});
@@ -45,14 +46,19 @@ lib.dialog('check',
                 session.conversationData.priority = args;
                 session.endDialog();
             }
-        } else {
-            session.endDialog();
         }
+        catch(error) {
+            session.send("Oops! an error accurd: %s, while retrieving the checking priorities, please try again later", error);
+        } 
+    } else {
+        session.endDialog();
+    }
 });
 
 lib.dialog('list', 
     async (session) => {
         try {
+            session.userData.oauth = session.userData.oauth || {};
             let jira = new Jira({
                 oauth: {
                     access_token: session.userData.oauth.accessToken,
@@ -65,7 +71,7 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the projects, please try again later", error);
+            session.send("Oops! an error accurd: %s, while retrieving the priorities, please try again later", error);
         } 
     });
 

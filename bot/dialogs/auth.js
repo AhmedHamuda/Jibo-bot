@@ -11,6 +11,10 @@ lib.dialog("authenticate",
     (session,args, next) => {
         if (!session.userData.oauth || !session.userData.oauth.accessToken || !session.userData.oauth.accessTokenSecret) {
             console.log(args);
+            let altButton = builder.CardAction.dialogAction(session, "goodbye", null, "Cancel");
+            if(env.process.JIRA_USER && env.process.JIRA_PASSWORD) {
+                altButton = builder.CardAction.dialogAction(session, "welcome", null, "Proceed without oAuth");
+            }
             let signIn = new builder.HeroCard(session)
                     .text("Please sign-in to Jira")
                     .buttons([
@@ -22,7 +26,7 @@ lib.dialog("authenticate",
                                 + "&channelId=" + args.channelId
                                 + "&conversationId=" + args.conversation.id
                                 + "&serviceUrl=" + args.serviceUrl, "Sign-in"),
-                        builder.CardAction.dialogAction(session, "goodbye", null, "Cancel")
+                        altButton
                     ]);
 
             let msg = new builder.Message(session);

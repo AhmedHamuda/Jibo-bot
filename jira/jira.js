@@ -8,7 +8,17 @@ const path = require("path");
 module.exports = class Jira extends JiraApi {
 
     constructor(config) {
-        config = config || {}; 
+        config = config || {};
+        let oauth;
+        if (process.env.JIRA_CONSUMER_KEY_SECRET && process.env.JIRA_CONSUMER_KEY) {
+            oauth = {
+                consumer_key: process.env.JIRA_CONSUMER_KEY,
+                consumer_secret: fs.readFileSync(path.join(path.resolve(process.env.USERPROFILE), ".ssh", process.env.JIRA_CONSUMER_KEY_SECRET)),
+            }
+        } else {
+            oauth = {};
+        }
+        Object.assign(oauth, config.oauth);
         let conf = {
             protocol: process.env.JIRA_PROTOCOL,
             host: process.env.JIRA_HOSTNAME,
@@ -17,12 +27,8 @@ module.exports = class Jira extends JiraApi {
             apiVersion: process.env.JIRA_REST_API_Version,
             port: process.env.JIRA_PORT,
             strictSSL: false,
-            oauth: {
-                consumer_key: process.env.JIRA_CONSUMER_KEY,
-                consumer_secret: fs.readFileSync(path.join(path.resolve(process.env.USERPROFILE), ".ssh", process.env.JIRA_CONSUMER_KEY_SECRET)),
-            }
+            oauth: oauth
         };
-        Object.assign(conf.oauth, config.oauth);
         super(conf);
     }
 

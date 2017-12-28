@@ -33,17 +33,21 @@ lib.dialog('ask', [
 lib.dialog('check', 
     (session, args) => {
         if(args) {
-            session.conversationData.status = session.conversationData.status || [];
-            let original = _.map(session.conversationData.statuses, (status) => {return status.toLowerCase();});
-            args = _.map(args, (status) => {return status.toLowerCase();});
-            const diff = _.difference(args, original);
-            if (diff) {
-                session.send("Requested statuses "+ diff.join(", ") +" are not available in Jira");
-                session.conversationData.status = _.intersection(args, original) || [];
-                session.replaceDialog("status:ask", {redo: true});
-            } else {
-                session.conversationData.status = helpers.checkAndApplyReversedStatus(args);
-                session.endDialog();
+            try {
+                session.conversationData.status = session.conversationData.status || [];
+                let original = _.map(session.conversationData.statuses, (status) => {return status.toLowerCase();});
+                args = _.map(args, (status) => {return status.toLowerCase();});
+                const diff = _.difference(args, original);
+                if (diff) {
+                    session.send("Requested statuses "+ diff.join(", ") +" are not available in Jira");
+                    session.conversationData.status = _.intersection(args, original) || [];
+                    session.replaceDialog("status:ask", {redo: true});
+                } else {
+                    session.conversationData.status = helpers.checkAndApplyReversedStatus(args);
+                    session.endDialog();
+                }
+            } catch {
+                session.send("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
             }
         } else {
             session.endDialog();
@@ -53,6 +57,7 @@ lib.dialog('check',
 lib.dialog('list', 
     async (session,args, next) => {
         try {
+            session.userData.oauth = session.userData.oauth || {};
             let jira = new Jira({
                 oauth: {
                     access_token: session.userData.oauth.accessToken,
@@ -65,7 +70,7 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the projects, please try again later", error);
+            session.send("Oops! an error accurd: %s, while retrieving the statuses, please try again later", error);
         } 
     });
 

@@ -4,16 +4,16 @@ const builder = require('botbuilder');
 const Jira = require("../../jira/jira");
 const lib = new builder.Library('project');
 const _ = require("underscore"); 
-lib.dialog('list', 
+lib.dialog('list',
     async (session,args, next) => {
         try {
+            session.userData.oauth = session.userData.oauth || {};
             let jira  = new Jira({
                 oauth: {
                     access_token: session.userData.oauth.accessToken,
                     access_token_secret: session.userData.oauth.accessTokenSecret,
                 }
             });
-        
             const projects = await jira.listProjects();
             session.userData.projects =  _.map(projects, (project) => { return project.key;});
             session.endDialog();
