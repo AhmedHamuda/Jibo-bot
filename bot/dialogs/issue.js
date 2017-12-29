@@ -9,13 +9,21 @@ const _ = require('underscore');
 let jira;
 
 lib.dialog('getbyid', [
-     (session) => {
-         session.conversationData.ticket = validateTicketNumber(session.message.text);
-         if(!session.conversationData.ticket) {
-            builder.Prompts.text(session, 'Sorry, what is the ticket number again?');
-        }
+     (session, args) => {
+         if(args && args.redo) {
+            builder.Prompts.text(session, 'Please enter a valid issue number');
+         } else if (args && args.entities) {
+            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || null;
+            if(_.isNull(issueNumber)) {
+                builder.Prompts.text(session, 'Please enter the issue number');
+            } else {
+                session.dialogData.issueNumber = issueNumber.entity;
+            }
+         } else {
+            builder.Prompts.text(session, 'Please enter the issue number');
+         }
     },
-    (session,results) => {
+    async (session,results) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
             jira = new Jira({
@@ -24,41 +32,150 @@ lib.dialog('getbyid', [
                     access_token_secret: session.userData.oauth.accessTokenSecret,
                 }
             });
-            const id = session.conversationData.ticket || results.response;
-            const issues = jira.getById({id: id});
-            if (issues == "error"){
-                session.send("Oops! an error accurd while retrieving the tickets, please try again later");
-            }
-            let cards = _.map(issues, (issue,i) => {
+            const issueNumber = session.dialogData.issueNumber || results.response;
+            const issue = await jira.findIssue(issueNumber, "", "id,key,summary,status,assignee,duedate,resolutiondate");
+            if (issue) {
                 const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
-                return new builder.HeroCard(session)
-                    .title(issue.key)
-                    .subtitle(issue.fields.summary)
-                    .text(issue.fields.status.name + "\n\n" +
-                            "Assignee: " + assignee + "\n\n" +
-                            "End date: " + issue.fields.dueDate
-                        );
-            });
-            let msg = new builder.Message(session);
-            msg.text("here! ordered by date and priority!")
-            msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
-            msg.attachments(cards);
-            // session.send(msg).endDialog().cancelDialog("filter:/");
-            session.conversationData = null;
-            session.endConversation(msg);
+                let card = new builder.HeroCard(session)
+                        .title(issue.key)
+                        .subtitle(issue.fields.summary)
+                        .text(issue.fields.status.name + "\n\n" +
+                                "Assignee: " + assignee + "\n\n" +
+                                "End date: " + issue.fields.duedate + "\n\n" +
+                                "Resolution date: " + issue.fields.resolutiondate
+                            );
+                let msg = new builder.Message(session);
+                msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
+                msg.attachments([card]);
+                session.send(msg);
+                session.endDialog("Anything else I can help with?");
+            } else {
+                session.send("No issue found bu number (%s). Please try searching again", issueNumber);
+            }
         } catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the tickets, please try again later", error);
+            if(error.statusCode == 404) {
+                session.replaceDialog("issue:getbyid", {redo: true});
+            } else {
+                session.send("Oops! An error accurd: %s. Please try again", error.errorMessage || error);
+            }
         }
     }
-]).triggerAction({ matches: /^(show me)\b/i })
-.endConversationAction(
-    "endfilter", "Ok. Goodbye.",
-    {
-        matches: /^cancel$|^goodbye$|^end$/i,
-        confirmPrompt: "This will cancel your search. Are you sure?"
-    }
-);
+]);
 
+lib.dialog('getDevStatus', [
+    (session, args) => {
+        if(args.redo) {
+            builder.Prompts.text(session, 'Please enter a valid issue number');
+        } else {
+            builder.Prompts.text(session, 'Please enter the issue number');
+        }
+    },
+    (session, results) => {
+       if (results && results.response) {
+            session.dialogData.issueNumber = results.response;
+            builder.Prompts.choice(session,"Please choose an application type:",
+            ["stash", "bitbucket"],
+            builder.ListStyle.button);
+       } else {
+            session.replaceDialog("issue:getDevStatus", {redo: true});
+       }
+    },
+    (session, results) => {
+        session.dialogData.applicationType = results.response.entity;
+        builder.Prompts.choice(session,"Please choose an application type:",
+        ["repository", "pullrequest"],
+        builder.ListStyle.button);
+    },
+    async (session,results) => {
+       try {
+           session.dialogData.dataType = results.response.entity;
+           session.userData.oauth = session.userData.oauth || {};
+           jira = new Jira({
+               oauth: {
+                   access_token: session.userData.oauth.accessToken,
+                   access_token_secret: session.userData.oauth.accessTokenSecret,
+               }
+           });
+           const devStatus = await jira.getDevStatusDetail(
+                                    session.dialogData.issueNumber,
+                                    session.dialogData.applicationType,
+                                    session.dialogData.dataType);
+           console.log(devStatus);
+           let cards = _.map(issues, (issue,i) => {
+               const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
+               return new builder.HeroCard(session)
+                   .title(issue.key)
+                   .subtitle(issue.fields.summary)
+                   .text(issue.fields.status.name + "\n\n" +
+                           "Assignee: " + assignee + "\n\n" +
+                           "End date: " + issue.fields.duedate + "\n\n" +
+                           "Resolution date: " + issue.fields.resolutiondate
+                       );
+           });
+           let msg = new builder.Message(session);
+           msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
+           msg.attachments(cards);
+           session.send(msg);
+           session.endDialog("Anything else I can help with?");
+       } catch(error) {
+            if(error.statusCode == 404) {
+                session.replaceDialog("issue:getDevStatus", {redo: true});
+            } else {
+                session.send("Oops! An error accurd: %s. Please try again", error.errorMessage || error);
+            }
+       }
+   }
+]);
+
+lib.dialog('getDevSummary', [
+    (session, args) => {
+        if (args.redo) {
+            builder.Prompts.text(session, 'Please type a valid issue Id');
+        } else {
+            builder.Prompts.text(session, 'Please enter the issue Id');
+        }
+    },
+    async (session,results) => {
+       try {
+           if(results && result.response) {
+                session.userData.oauth = session.userData.oauth || {};
+                jira = new Jira({
+                    oauth: {
+                        access_token: session.userData.oauth.accessToken,
+                        access_token_secret: session.userData.oauth.accessTokenSecret,
+                    }
+                });
+                const issueNumber = session.dialogData.issueNumber || results.response;
+                const issues = await jira.findIssue(issueNumber, "", "id,key,summary,status,assignee,duedate,resolutiondate");
+                let cards = _.map(issues, (issue,i) => {
+                    const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
+                    return new builder.HeroCard(session)
+                        .title(issue.key)
+                        .subtitle(issue.fields.summary)
+                        .text(issue.fields.status.name + "\n\n" +
+                                "Assignee: " + assignee + "\n\n" +
+                                "End date: " + issue.fields.duedate + "\n\n" +
+                                "Resolution date: " + issue.fields.resolutiondate
+                            );
+                });
+                let msg = new builder.Message(session);
+                msg.text("here! ordered by date and priority!")
+                msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
+                msg.attachments(cards);
+                session.send(msg);
+                session.endDialog("Anything else I can help with?");
+            } else {
+                session.replaceDialog("issue:getDevSummary", {redo: true});
+            }
+       } catch(error) {
+            if(error.statusCode == 404) {
+                session.replaceDialog("issue:getDevSummary", {redo: true});
+            } else {
+                session.send("Oops! An error accurd: %s. Please try again", error.errorMessage || error);
+            }
+       }
+   }
+]);
 
 lib.dialog('get', [
     async (session,args, next) => {
@@ -72,8 +189,9 @@ lib.dialog('get', [
             });
             /*
             Object.assign(session.dialogData, args);
-            Object.assign(session.dialogData.filter.project, session.userData.projects)
+            
             */
+            session.conversationData.projects = session.userData.projects;
             const count = await jira.getCount(session.conversationData);
             if(count >= 10) { 
                 builder.Prompts.choice(session, "looks like there is " + count + " tickets, would you like to add some additinal filters",
@@ -82,14 +200,14 @@ lib.dialog('get', [
             } else if (count == 0) {
                 session.send("looks like there is no tickets with the search parameters!");
             } else if (count == -1 ) {
-                session.send("Oops! an error accurd while retrieving the tickets, please try again later");
+                session.send("Oops! an error accurd while retrieving the tickets. Please try again later");
             } 
             else {
                 session.replaceDialog("issue:fetch", session.conversationData);
             }
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the tickets, please try again later", error);
+            session.send("Oops! An error accurd: %s, while retrieving the tickets. Please try again later", error.errorMessage || error);
         }
         
     },
@@ -117,7 +235,7 @@ lib.dialog("fetch", async (session, args) => {
                 access_token_secret: session.userData.oauth.accessTokenSecret,
             }
           });
-        //args = Object.assign(args || session.dialogData, session.userData.projects);
+        session.conversationData.projects = session.userData.projects;
         session.sendTyping();
         const result = await jira.searchJira(session.conversationData);
         let cards = _.map(result.issues, (issue,i) => {
@@ -127,17 +245,19 @@ lib.dialog("fetch", async (session, args) => {
                 .subtitle(issue.fields.summary)
                 .text(issue.fields.status.name + "\n\n" +
                         "Assignee: " + assignee + "\n\n" +
-                        "End date: " + issue.fields.dueDate
+                        "End date: " + issue.fields.duedate + "\n\n" +
+                        "Resolution date: " + issue.fields.resolutiondate
                     );
         });
         let msg = new builder.Message(session);
         msg.text("here! ordered by date and priority!")
         msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
         msg.attachments(cards);
-        session.send(msg).endDialog(); //.cancelDialog("filter:/");
+        session.send(msg);
+        session.endDialog("Anything else I can help with?");
     }
     catch(error) {
-        session.send("Oops! an error accurd: %s, while retrieving the tickets, please try again later", error);
+        session.send("Oops! An error accurd: %s, while retrieving the tickets. Please try again later", error.errorMessage || error);
     }
 });
 

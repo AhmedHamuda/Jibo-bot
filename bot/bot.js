@@ -31,8 +31,11 @@ const intents = new builder.IntentDialog({
 });
 
 bot.dialog('/', intents
-    .matches("search_open_conversation","text-search:/")
-    .matches("search_personalized", "my-issues:/")
+    .matches("search_all_issues","text-search:/")
+    .matches("search_my_issues", "my-issues:/")
+    .matches("find_issue", "issue:getbyid")
+    .matches("issue_dev_status", "issue:getDevStatus")
+    .matches("issue_dev_summary", "issue:getDevSummary")
     .matches("help", "help:/")
     .onDefault((session, args) => {
         let fulfillment = builder.EntityRecognizer.findEntity(args.entities, 'fulfillment'); 

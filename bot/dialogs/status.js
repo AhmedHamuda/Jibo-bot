@@ -4,15 +4,23 @@ const builder = require('botbuilder');
 const Jira = require("../../jira/jira");
 const lib = new builder.Library('status');
 const _ =  require('underscore');
-
+const helpers = require("../../common/helpers");
 lib.dialog('ask', [ 
     (session, args) => {
         if(!args || !args.redo) {
             session.conversationData.status = [];
         }
-        builder.Prompts.choice(session,"please choose a status:",
-                _.difference(session.conversationData.statuses, session.conversationData.status),
+        let original = _.map(session.conversationData.statuses, (status) => {return status.toLowerCase();});
+        let selected = _.map(session.conversationData.status, (status) => {return status.toLowerCase();});
+        const diff = _.difference(original, selected);
+        if (diff.length > 0) {
+            builder.Prompts.choice(session,"please choose a status:",
+                diff,
                 builder.ListStyle.button);
+        } else {
+            session.endDialog("you've selected all available statuses");
+        }
+        
     },
     (session, results) => {
         session.conversationData.status.push(results.response.entity);
@@ -32,26 +40,26 @@ lib.dialog('ask', [
 
 lib.dialog('check', 
     (session, args) => {
-        if(args) {
-            try {
+        try {
+        if(args) {  
                 session.conversationData.status = session.conversationData.status || [];
                 let original = _.map(session.conversationData.statuses, (status) => {return status.toLowerCase();});
                 args = _.map(args, (status) => {return status.toLowerCase();});
                 const diff = _.difference(args, original);
-                if (diff) {
+                if (diff.length > 0) {
                     session.send("Requested statuses ("+ diff.join(", ") +") are not available in Jira");
                     session.conversationData.status = _.intersection(args, original) || [];
                     session.replaceDialog("status:ask", {redo: true});
                 } else {
                     session.conversationData.status = helpers.checkAndApplyReversedStatus(args);
                     session.endDialog();
-                }
-            } catch {
-                session.send("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
-            }
+                }    
         } else {
             session.endDialog();
         }
+    } catch (error) {
+        session.send("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
+    }
 });
 
 lib.dialog('list', 

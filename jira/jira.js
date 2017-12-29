@@ -42,7 +42,7 @@ module.exports = class Jira extends JiraApi {
     searchJira (args, options) {
         let query, queryString, orderBy;
         options = options ? options : {}; 
-        options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate"];
+        options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate", "resolutiondate"];
         query = this.parseFilterParams(args);
         orderBy = "order by " + (this.parseOrderParams(args.order) || "priority ASC, duedate ASC, status ASC");
         queryString = _s.sprintf("%s %s", query, orderBy);

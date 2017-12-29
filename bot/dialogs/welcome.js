@@ -19,15 +19,10 @@ lib.dialog("welcome", [
         session.beginDialog("issue-type:list");
     },
     (session, args) => {
-        builder.Prompts.choice(session, "Welcome "+ session.message.user.name +"! would you like me to guide you?", "yes|no", builder.ListStyle.button);
-    },
-    (session, result) => {
-        if(result && result.response.entity == "yes") {
-            session.send("great! let's begin!").replaceDialog('filter:/');
-        }
-        else{
-            session.send("Understood, please type 'help' to get the user guide!").endDialog();
-        }
+        session.send("Welcome "+ session.message.user.name +"! I'm Jibo, Jira assistant bot. How may I help you?");
+        session.delay(60*1000);
+        session.send("Type 'help' for guidness");
+        session.endDialog();
     }
 ]);
 

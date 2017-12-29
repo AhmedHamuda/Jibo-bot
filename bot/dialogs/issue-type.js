@@ -1,7 +1,7 @@
 "use strict";
 
-const util = require('util');
 const builder = require('botbuilder');
+const Jira = require("../../jira/jira");
 const _ =  require('underscore');
 const lib = new builder.Library('issue-type');
 
@@ -11,10 +11,16 @@ lib.dialog('ask', [
         if(!args || !args.redo) {
             session.conversationData.issueType = [];
         }
-        session.conversationData.issueType = session.conversationData.issueType || [];
-        builder.Prompts.choice(session,"please choose an issue type:",
-                _.difference( session.conversationData.issueTypes, session.conversationData.issueType),
+        let original = _.map(session.conversationData.issueTypes, (status) => {return status.toLowerCase();});
+        let selected = _.map(session.conversationData.issueType, (status) => {return status.toLowerCase();});
+        const diff = _.difference(original, selected);
+        if(diff.length > 0) {
+            builder.Prompts.choice(session,"please choose a issue types:",
+                diff,
                 builder.ListStyle.button);
+        } else {
+            session.endDialog("you've selected all available issue types");
+        }
     },
     (session, results) => {
         session.conversationData.issueType.push(results.response.entity);
@@ -34,13 +40,13 @@ lib.dialog('ask', [
 
 lib.dialog('check', 
     (session, args) => {
+    try {
         if(args) {
-            try {
                 session.conversationData.issueType = session.conversationData.issueType || [];
                 let original = _.map(session.conversationData.issueTypes, (issueType) => {return issueType.toLowerCase();});
                 args = _.map(args, (issueType) => {return issueType.toLowerCase();});
                 const diff = _.difference(args, original);
-                if (diff) {
+                if (diff.length > 0) {
                     session.send("Requested issue types ("+ diff.join(", ") +") are not available in Jira");
                     session.conversationData.issueType = _.intersection(args, original) || [];
                     session.replaceDialog("issue-type:ask", {redo: true});
@@ -48,12 +54,12 @@ lib.dialog('check',
                     session.conversationData.issueType = args;
                     session.endDialog();
                 }
-            } catch {
-                session.send("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
-            }
         } else {
             session.endDialog();
         }
+    } catch(error) {
+        session.send("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
+    }
 });
 
 lib.dialog('list', 

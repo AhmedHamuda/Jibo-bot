@@ -2,17 +2,24 @@
 
 const builder = require('botbuilder');
 const Jira = require("../../jira/jira");
-const lib = new builder.Library('priority');
 const _ = require("underscore");
+const lib = new builder.Library('priority');
 
 lib.dialog('ask', [ 
-    (session) => {
+    (session, args) => {
         if(!args || !args.redo) {
             session.conversationData.priority = [];
         }
-        builder.Prompts.choice(session,"please choose a priority:",
-                _.difference(session.conversationData.priorities, session.conversationData.priority),
+        let original = _.map(session.conversationData.priorities, (status) => {return status.toLowerCase();});
+        let selected = _.map(session.conversationData.priority, (status) => {return status.toLowerCase();});
+        const diff = _.difference(original, selected);
+        if(diff.length > 0) {
+            builder.Prompts.choice(session,"please choose a priority:",
+                diff,
                 builder.ListStyle.button);
+        } else {
+            session.endDialog("you've selected all available priorities");
+        }
     },
     (session, results) => {
         session.conversationData.priority.push(results.response.entity);
@@ -32,27 +39,27 @@ lib.dialog('ask', [
 
 lib.dialog('check', 
     (session, args) => {
-    if(args) {
         try {
-            session.conversationData.priority = session.conversationData.priority || [];
-            let original = _.map(session.conversationData.priorities, (priority) => {return priority.toLowerCase();});
-            args = _.map(args, (priority) => {return priority.toLowerCase();});
-            const diff = _.difference(args, original);
-            if (diff) {
-                session.send("Requested priorities ("+ diff.join(", ") +") are not available in Jira");
-                session.conversationData.priority = _.intersection(args, original) || [];
-                session.replaceDialog("priority:ask", {redo: true});
+            if(args) {
+                    session.conversationData.priority = session.conversationData.priority || [];
+                    let original = _.map(session.conversationData.priorities, (priority) => {return priority.toLowerCase();});
+                    args = _.map(args, (priority) => {return priority.toLowerCase();});
+                    const diff = _.difference(args, original);
+                    if (diff.length > 0) {
+                        session.send("Requested priorities ("+ diff.join(", ") +") are not available in Jira");
+                        session.conversationData.priority = _.intersection(args, original) || [];
+                        session.replaceDialog("priority:ask", {redo: true});
+                    } else {
+                        session.conversationData.priority = args;
+                        session.endDialog();
+                    }
             } else {
-                session.conversationData.priority = args;
                 session.endDialog();
             }
         }
         catch(error) {
             session.send("Oops! an error accurd: %s, while retrieving the checking priorities, please try again later", error);
         } 
-    } else {
-        session.endDialog();
-    }
 });
 
 lib.dialog('list', 

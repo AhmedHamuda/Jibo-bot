@@ -6,18 +6,30 @@ const _ = require('underscore');
 const lib = new builder.Library('text-search');
 
 lib.dialog('/', [
-     (session, args) => {
+     (session, args, next) => {
         session.dialogData.entities = args.entities;
         const status = builder.EntityRecognizer.findEntity(args.entities, 'status') || null;
-        session.beginDialog("status:check", status.entity);
+        if(!_.isNull(status)) {
+            session.beginDialog("status:check", status.entity);
+        } else {
+            next();
+        }
      },
-     (session) => {
+     (session, args, next) => {
         const priority = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'priority') || null;
-        session.beginDialog("priority:check", priority.entity);
+        if(!_.isNull(priority)) {
+            session.beginDialog("priority:check", priority.entity);
+        } else {
+            next();
+        }
      },
-     (session) => {
+     (session, args, next) => {
         const issueType = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'issueType') || null;
-        session.beginDialog("issue-type:check", issueType.entity);
+        if(!_.isNull(issueType)) {
+            session.beginDialog("issue-type:check", issueType.entity);
+        } else {
+            next();
+        }
      },
      (session, args, next) => {
         const subject = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'subject') || null;

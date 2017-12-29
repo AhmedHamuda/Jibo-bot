@@ -1,45 +1,28 @@
 "use strict";
 
-const constant = require("../constants/constants");
 const _s = require("underscore.string");
 const chrono = require("chrono-node");
 const _ = require("underscore");
-const constants = require("../constants/constants");
 //helpers:
-module.exports = { 
-    checkAndApplyReversedStatus : (statuses) => {
+module.exports = class helpers { 
+    static checkAndApplyReversedStatus(all, statuses) {
         const index = _.findIndex(statuses, (status) => {
             return status.indexOf("not");
         });
         if(index > -1) {
-            let status = constants.status;
+            let diff = all;
             _.each(statuses, (status) => {
                 if (status.indexOf("not")) {
                     let unStatus = status.replace("not ","");
-                    status = _.without(status, unStatus);
+                    diff = _.without(status, unStatus);
                 }
             });
-            return statuses;
+            return diff;
         }
         return statuses;
-    },
-    checkAndApplyReversedPriority : (priorities) => {
-        const index = _.findIndex(priorities, (priority) => {
-            return priority.indexOf("not");
-        });
-        if(index > -1) {
-            let priority = constants.priority;
-            _.each(priorities, (priority) => {
-                if (priority.indexOf("not")) {
-                    let unPriority = priority.replace("not ","");
-                    priority = _.without(priority, unPriority);
-                }
-            });
-            return priorities;
-        }
-        return priorities;
-    },
-    getDate : (dateEntity) => {
+    }
+
+    static getDate(dateEntity) {
         if(dateEntity) {
             let date = dateEntity.entity.replace(/\./g,"/");
             return chrono.parseDate(date);
