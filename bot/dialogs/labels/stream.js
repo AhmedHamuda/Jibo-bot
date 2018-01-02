@@ -24,7 +24,7 @@ lib.dialog('ask', [
             session.replaceDialog("stream:ask");
         }
         else{
-            session.endDialogWithResult(session.conversationData.stream); 
+            session.endDialog(); 
         }
     }
 ]);

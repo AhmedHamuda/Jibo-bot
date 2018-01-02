@@ -13,7 +13,7 @@ lib.dialog('ask', [
         if (results.response) {
             session.conversationData.dueDate = builder.EntityRecognizer.resolveTime([results.response]);
         }
-        session.endDialogWithResult(results);
+        session.endDialog();
     }
 ]);
 

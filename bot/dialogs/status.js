@@ -44,21 +44,21 @@ lib.dialog('check',
         if(args) {  
                 session.conversationData.status = session.conversationData.status || [];
                 let original = _.map(session.conversationData.statuses, (status) => {return status.toLowerCase();});
-                args = _.map(args, (status) => {return status.toLowerCase();});
+                args = _.isArray(args) ? _.map(args, (status) => {return status.toLowerCase();}): [args];
                 const diff = _.difference(args, original);
                 if (diff.length > 0) {
                     session.send("Requested statuses ("+ diff.join(", ") +") are not available in Jira");
                     session.conversationData.status = _.intersection(args, original) || [];
                     session.replaceDialog("status:ask", {redo: true});
                 } else {
-                    session.conversationData.status = helpers.checkAndApplyReversedStatus(args);
+                    session.conversationData.status = helpers.checkAndApplyReversedStatus(original, args);
                     session.endDialog();
                 }    
         } else {
             session.endDialog();
         }
     } catch (error) {
-        session.send("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
+        session.endDialog("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
     }
 });
 
@@ -78,7 +78,7 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the statuses, please try again later", error);
+            session.endDialog("Oops! an error accurd: %s, while retrieving the statuses, please try again later", error);
         }
     });
 

@@ -19,7 +19,7 @@ lib.dialog("/", (session) => {
                     );
         let msg = new builder.Message(session);
         msg.attachments([card]);
-        session.endConversation(msg);
+        session.endDialog(msg);
     }
 )
 .triggerAction({ matches: /.*?(help)\W*(me|us)?\W*/i });

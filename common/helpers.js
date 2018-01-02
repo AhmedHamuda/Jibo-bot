@@ -9,12 +9,12 @@ module.exports = class helpers {
         const index = _.findIndex(statuses, (status) => {
             return status.indexOf("not");
         });
-        if(index > -1) {
+        if(index > 0) {
             let diff = all;
             _.each(statuses, (status) => {
-                if (status.indexOf("not")) {
+                if (status.indexOf("not") > 0) {
                     let unStatus = status.replace("not ","");
-                    diff = _.without(status, unStatus);
+                    diff = _.without(statuses, unStatus);
                 }
             });
             return diff;

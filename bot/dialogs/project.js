@@ -19,7 +19,7 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the projects, please try again later", error);
+            session.endDialog("Oops! an error accurd: %s, while retrieving the projects, please try again later", error);
         } 
     });
 

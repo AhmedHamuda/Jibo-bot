@@ -14,7 +14,7 @@ lib.dialog('ask', [
         if(results.response) {
             session.conversationData.assignee = results.response;
         }
-        session.endDialogWithResult(results);
+        session.endDialog();
     }
 ]);
 

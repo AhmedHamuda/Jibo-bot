@@ -8,6 +8,7 @@ const lib = new builder.Library('text-search');
 lib.dialog('/', [
      (session, args, next) => {
         session.dialogData.entities = args.entities;
+        session.conversationData.status = null;
         const status = builder.EntityRecognizer.findEntity(args.entities, 'status') || null;
         if(!_.isNull(status)) {
             session.beginDialog("status:check", status.entity);
@@ -16,6 +17,7 @@ lib.dialog('/', [
         }
      },
      (session, args, next) => {
+        session.conversationData.priority = null;
         const priority = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'priority') || null;
         if(!_.isNull(priority)) {
             session.beginDialog("priority:check", priority.entity);
@@ -24,6 +26,7 @@ lib.dialog('/', [
         }
      },
      (session, args, next) => {
+        session.conversationData.issueType = null;
         const issueType = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'issueType') || null;
         if(!_.isNull(issueType)) {
             session.beginDialog("issue-type:check", issueType.entity);

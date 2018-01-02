@@ -44,7 +44,7 @@ lib.dialog('check',
         if(args) {
                 session.conversationData.issueType = session.conversationData.issueType || [];
                 let original = _.map(session.conversationData.issueTypes, (issueType) => {return issueType.toLowerCase();});
-                args = _.map(args, (issueType) => {return issueType.toLowerCase();});
+                args = _.isArray(args) ? _.map(args, (issueType) => {return issueType.toLowerCase();}) : [args];
                 const diff = _.difference(args, original);
                 if (diff.length > 0) {
                     session.send("Requested issue types ("+ diff.join(", ") +") are not available in Jira");
@@ -58,7 +58,7 @@ lib.dialog('check',
             session.endDialog();
         }
     } catch(error) {
-        session.send("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
+        session.endDialog("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
     }
 });
 
@@ -78,7 +78,7 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the issue types, please try again later", error);
+            session.endDialog("Oops! an error accurd: %s, while retrieving the issue types, please try again later", error);
         } 
 });
 

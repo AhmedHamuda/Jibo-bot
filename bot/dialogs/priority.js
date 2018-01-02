@@ -43,7 +43,7 @@ lib.dialog('check',
             if(args) {
                     session.conversationData.priority = session.conversationData.priority || [];
                     let original = _.map(session.conversationData.priorities, (priority) => {return priority.toLowerCase();});
-                    args = _.map(args, (priority) => {return priority.toLowerCase();});
+                    args = _.isArray(args) ? _.map(args, (priority) => {return priority.toLowerCase();}): [args];
                     const diff = _.difference(args, original);
                     if (diff.length > 0) {
                         session.send("Requested priorities ("+ diff.join(", ") +") are not available in Jira");
@@ -58,7 +58,7 @@ lib.dialog('check',
             }
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the checking priorities, please try again later", error);
+            session.endDialog("Oops! an error accurd: %s, while retrieving the checking priorities, please try again later", error);
         } 
 });
 
@@ -78,7 +78,7 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.send("Oops! an error accurd: %s, while retrieving the priorities, please try again later", error);
+            session.endDialog("Oops! an error accurd: %s, while retrieving the priorities, please try again later", error);
         } 
     });
 

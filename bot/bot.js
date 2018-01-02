@@ -33,13 +33,14 @@ const intents = new builder.IntentDialog({
 bot.dialog('/', intents
     .matches("search_all_issues","text-search:/")
     .matches("search_my_issues", "my-issues:/")
-    .matches("find_issue", "issue:getbyid")
+    .matches("find_issue", "issue:getByKey")
+    .matches("find_issue_links", "issue-link:get")
     .matches("issue_dev_status", "issue:getDevStatus")
     .matches("issue_dev_summary", "issue:getDevSummary")
     .matches("help", "help:/")
     .onDefault((session, args) => {
         let fulfillment = builder.EntityRecognizer.findEntity(args.entities, 'fulfillment'); 
-        if (fulfillment){ 
+        if (fulfillment && fulfillment.entity && fulfillment.entity.length > 0) { 
             let speech = fulfillment.entity; 
             session.send(speech); 
         }else{ 
@@ -55,6 +56,7 @@ bot.library(require('./dialogs/filter').createLibrary());
 bot.library(require('./dialogs/text-search').createLibrary());
 bot.library(require('./dialogs/issue').createLibrary());
 bot.library(require('./dialogs/issue-type').createLibrary());
+bot.library(require('./dialogs/issue-link').createLibrary());
 bot.library(require('./dialogs/labels/stream').createLibrary());
 bot.library(require('./dialogs/due-date').createLibrary());
 bot.library(require('./dialogs/status').createLibrary());
