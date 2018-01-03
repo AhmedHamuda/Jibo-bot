@@ -25,18 +25,10 @@ server.use(restify.plugins.queryParser());
 server.use(restify.plugins.bodyParser());
 
 server.use(session.sessionManager);
-/*
-server.use(sessions({
-    cookieName: "session",
-    secret: "GDSHR2rwaf32",
-    duration: 24 * 60 * 60 * 1000,
-    activeDuration: 1000 * 60 * 5
-}));
-*/
 server.listen(process.env.port || process.env.PORT || 3978, process.env.WEB_HOSTNAME, () => {
     console.log('listening to %s', server.url);
 });
-// Listen for messages from users 
+server.server.setTimeout(60000*10);
 
 server.get("/", (req, res) => { res.send({ hello: 'world' }); });
 server.get("/api/jira/tokenRequest", jiraOAuth.requestToken);

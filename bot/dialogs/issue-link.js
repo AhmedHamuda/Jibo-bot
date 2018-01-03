@@ -23,7 +23,7 @@ lib.dialog('get', [
             next(args);
         }
      },
-     (session, args) => {
+     (session, args, next) => {
          if(args && args.redo) {
             builder.Prompts.text(session, "Issue number doesn't exist. Please enter a valid issue number");
          } else if (session.dialogData.entities) {
@@ -32,6 +32,7 @@ lib.dialog('get', [
                 builder.Prompts.text(session, 'Please enter the issue number');
             } else {
                 session.dialogData.issueNumber = issueNumber.entity;
+                next();
             }
          } else {
             builder.Prompts.text(session, 'Please enter the issue number');

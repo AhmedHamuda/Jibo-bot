@@ -9,7 +9,7 @@ const _ = require('underscore');
 let jira;
 
 lib.dialog('getByKey', [
-     (session, args) => {
+     (session, args, next) => {
          if(args && args.redo) {
             builder.Prompts.text(session, "Issue number doesn't exist. Please enter a valid issue number");
          } else if (args && args.entities) {
@@ -18,6 +18,7 @@ lib.dialog('getByKey', [
                 builder.Prompts.text(session, 'Please enter the issue number');
             } else {
                 session.dialogData.issueNumber = issueNumber.entity;
+                next();
             }
          } else {
             builder.Prompts.text(session, 'Please enter the issue number');
@@ -33,7 +34,7 @@ lib.dialog('getByKey', [
                 }
             });
             const issueNumber = session.dialogData.issueNumber || results.response;
-            const issue = await jira.findIssue(issueNumber, "", "id,key,summary,status,assignee,duedate,resolutiondate");
+            const issue = await jira.findIssue(issueNumber, "", "id,key,summary,status,assignee,duedate,resolutiondate,issuetype");
             if (issue) {
                 const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
                 let card = new builder.HeroCard(session)

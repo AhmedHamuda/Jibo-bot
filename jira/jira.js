@@ -42,7 +42,7 @@ module.exports = class Jira extends JiraApi {
     searchJira (args, options) {
         let query, queryString, orderBy;
         options = options ? options : {}; 
-        options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate", "resolutiondate"];
+        options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate", "resolutiondate", "issuetype"];
         query = this.parseFilterParams(args);
         orderBy = "order by " + (this.parseOrderParams(args.order) || "priority ASC, duedate ASC, status ASC");
         queryString = _s.sprintf("%s %s", query, orderBy);
@@ -84,5 +84,27 @@ module.exports = class Jira extends JiraApi {
         }
        
         return orderArray.join(_s.quote(",", " "));
+    }
+
+    assign(issueId, username, options = {}) {
+        return this.doRequest(this.makeRequestHeader(this.makeUri({
+          pathname: `/issue/${issueId}/assignee`,
+        }), {
+          body: {
+            name: username,
+            ...options,
+          },
+          method: 'PUT',
+          followAllRedirects: true,
+        }));
+    }
+
+    getComments(issueId, options= {}){
+        return this.doRequest(this.makeRequestHeader(this.makeUri({
+            pathname: `/issue/${issueId}/comment`,
+            query: {
+                ...options
+              },
+          })));
     }
 }

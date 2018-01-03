@@ -24,6 +24,16 @@ const bot = new builder.UniversalBot(connector, {
     }
 });
 bot.set("storage", storage);
+/*
+bot.use({
+    botbuilder: (session, next) => {
+        ManualSupport.SaveUserData(session, next);
+    },
+    send: (event, next) => {
+        ManualSupport.logOutgoingMessage(event, next);
+    }
+})
+*/
 
 const recognizer = new apiairecognizer(process.env.APIAI_CLIENT_TOKEN);
 const intents = new builder.IntentDialog({
@@ -35,6 +45,10 @@ bot.dialog('/', intents
     .matches("search_my_issues", "my-issues:/")
     .matches("find_issue", "issue:getByKey")
     .matches("find_issue_links", "issue-link:get")
+    .matches("assign_issue", "assignee:assign")
+    .matches("add_issue_comment", "comment:add")
+    .matches("get_issue_comment", "comment:get")
+    .matches("set_issue_status", "status:update")
     .matches("issue_dev_status", "issue:getDevStatus")
     .matches("issue_dev_summary", "issue:getDevSummary")
     .matches("help", "help:/")
@@ -65,6 +79,7 @@ bot.library(require('./dialogs/project').createLibrary());
 bot.library(require('./dialogs/subject').createLibrary());
 bot.library(require('./dialogs/assignee').createLibrary());
 bot.library(require('./dialogs/my-issues').createLibrary());
+bot.library(require('./dialogs/comment').createLibrary());
 //bot.library(require('./dialogs/settings').createLibrary());
 bot.library(require('./dialogs/help').createLibrary());
 bot.on('conversationUpdate', (message) => {
