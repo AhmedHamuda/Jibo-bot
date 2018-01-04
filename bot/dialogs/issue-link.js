@@ -1,10 +1,10 @@
 "use strict";
 
-const util = require('util');
 const builder = require('botbuilder');
 const Jira = require("../../jira/jira");
 const lib = new builder.Library('issue-link');
 const _ = require('underscore');
+const helpers = require("../../common/helpers");
 
 let jira;
 
@@ -27,12 +27,16 @@ lib.dialog('get', [
          if(args && args.redo) {
             builder.Prompts.text(session, "Issue number doesn't exist. Please enter a valid issue number");
          } else if (session.dialogData.entities) {
-            const issueNumber = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'issueNumber') || null;
-            if(_.isNull(issueNumber)) {
+            const issueNumber = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'issueNumber') || undefined;
+            if(!issueNumber) {
                 builder.Prompts.text(session, 'Please enter the issue number');
             } else {
-                session.dialogData.issueNumber = issueNumber.entity;
-                next();
+                session.dialogData.issueNumber = helpers.checkIssueNumberFormat(issueNumber.entity.replace(/[^0-9a-zA-Z\-]/gi, ''));
+                if(!session.conversationData.issueNumber) {
+                    builder.Prompts.text(session, 'Please enter the issue number again');
+                } else{
+                    next();
+                }
             }
          } else {
             builder.Prompts.text(session, 'Please enter the issue number');

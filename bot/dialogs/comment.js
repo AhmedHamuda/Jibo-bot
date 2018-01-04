@@ -4,18 +4,24 @@ const builder = require('botbuilder');
 const Jira = require("../../jira/jira");
 const lib = new builder.Library('comment');
 const _ = require("underscore");
+const helpers = require("../../common/helpers");
+
 lib.dialog('add', [ 
     (session, args, next) => {
         if(args && args.redo) {
             builder.Prompts.text(session, "Please enter a valid issue number");
          } else if (args && args.entities) {
             session.dialogData.entities = args.entities;
-            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || null;
-            if(_.isNull(issueNumber)) {
+            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || undefined;
+            if(!issueNumber) {
                 builder.Prompts.text(session, 'Please enter the issue number');
             } else {
-                session.dialogData.issueNumber = issueNumber.entity.replace(/[^0-9a-zA-Z\-]/gi, '');
-                next();
+                session.dialogData.issueNumber = helpers.checkIssueNumberFormat(issueNumber.entity.replace(/[^0-9a-zA-Z\-]/gi, ''));
+                if(!session.conversationData.issueNumber) {
+                    builder.Prompts.text(session, 'Please enter the issue number again');
+                } else{
+                    next();
+                }
             }
          } else {
             builder.Prompts.text(session, 'Please enter the issue number');
@@ -55,7 +61,7 @@ lib.dialog('add', [
                 session.send("Issue doesn't exist!")
                 session.replaceDialog("comment:add", {redo: true});
             } else if(error.statusCode == 401) {
-                session.send("Sorry %s, You dont have permission to assign the issue", session.message.address.user.name)
+                session.send("Sorry %s, You dont have permission to add comment to this issue", session.message.address.user.name)
                 session.endDialog();
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
@@ -71,12 +77,16 @@ lib.dialog('get', [
             builder.Prompts.text(session, "Please enter a valid issue number");
          } else if (args && args.entities) {
             session.dialogData.entities = args.entities;
-            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || null;
-            if(_.isNull(issueNumber)) {
+            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || undefined;
+            if(!issueNumber) {
                 builder.Prompts.text(session, 'Please enter the issue number');
             } else {
-                session.dialogData.issueNumber = issueNumber.entity;
-                next();
+                session.dialogData.issueNumber = helpers.checkIssueNumberFormat(issueNumber.entity.replace(/[^0-9a-zA-Z\-]/gi, ''));
+                if(!session.conversationData.issueNumber) {
+                    builder.Prompts.text(session, 'Please enter the issue number again');
+                } else {
+                    next();
+                }
             }
          } else {
             builder.Prompts.text(session, 'Please enter the issue number');

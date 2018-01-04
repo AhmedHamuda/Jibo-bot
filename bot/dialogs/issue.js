@@ -13,12 +13,16 @@ lib.dialog('getByKey', [
          if(args && args.redo) {
             builder.Prompts.text(session, "Issue number doesn't exist. Please enter a valid issue number");
          } else if (args && args.entities) {
-            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || null;
-            if(_.isNull(issueNumber)) {
+            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || undefined;
+            if(!issueNumber) {
                 builder.Prompts.text(session, 'Please enter the issue number');
             } else {
-                session.dialogData.issueNumber = issueNumber.entity;
-                next();
+                session.dialogData.issueNumber = helpers.checkIssueNumberFormat(issueNumber.entity.replace(/[^0-9a-zA-Z\-]/gi, ''));
+                if(!session.conversationData.issueNumber) {
+                    builder.Prompts.text(session, 'Please enter the issue number again');
+                } else {
+                    next();
+                }
             }
          } else {
             builder.Prompts.text(session, 'Please enter the issue number');

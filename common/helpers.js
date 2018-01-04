@@ -29,4 +29,24 @@ module.exports = class helpers {
         }
         return null;
     }
+
+    static buildTransitionObj(transition) {
+        let transitionObj = {
+            transition: {
+                id: transition.id
+            },
+        };
+        let fields = _.filter(transition.fields, (field) => {
+            if(field.value) {
+                return field;
+            }
+        });
+        let fieldsObj = _.object(_.map(fields, _.values));
+        transitionObj.fields = fieldsObj;
+        return transitionObj;
+    }
+
+    static checkIssueNumberFormat(issueNumber) {
+        return issueNumber.toUpperCase().match("^[A-Z\_]+\-[0-9]+") ? issueNumber : undefined;
+    }
 }
