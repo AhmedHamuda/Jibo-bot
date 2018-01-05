@@ -5,6 +5,7 @@ const dateformat = require("dateformat");
 const JiraApi = require("jira-client");
 const fs = require("file-system").fs;
 const path = require("path");
+
 module.exports = class Jira extends JiraApi {
 
     constructor(config) {
@@ -13,22 +14,23 @@ module.exports = class Jira extends JiraApi {
         if (process.env.JIRA_CONSUMER_KEY_SECRET && process.env.JIRA_CONSUMER_KEY) {
             oauth = {
                 consumer_key: process.env.JIRA_CONSUMER_KEY,
-                consumer_secret: fs.readFileSync(path.join(path.resolve(process.env.USERPROFILE), ".ssh", process.env.JIRA_CONSUMER_KEY_SECRET)),
-            }
+                consumer_secret: fs.readFileSync(path.join(path.resolve(process.env.USERPROFILE), process.env.PRIV_KEY_DIR, process.env.JIRA_CONSUMER_KEY_SECRET)),
+            };
         } else {
-            oauth = {};
+            throw new Error("missing OAuth consumer key and consumer secret");
         }
-        Object.assign(oauth, config.oauth);
+        Object.assign(config.oauth, oauth);
         let conf = {
-            protocol: process.env.JIRA_PROTOCOL,
-            host: process.env.JIRA_HOSTNAME,
-            username: process.env.JIRA_USER,
-            password: process.env.JIRA_PASSWORD,
+            //protocol: process.env.JIRA_PROTOCOL,
+            //host: process.env.JIRA_HOSTNAME,
+            //sername: process.env.JIRA_USER,
+            //password: process.env.JIRA_PASSWORD,
             apiVersion: process.env.JIRA_REST_API_Version,
-            port: process.env.JIRA_PORT,
+            //port: process.env.JIRA_PORT,
             strictSSL: false,
-            oauth: oauth
+            //oauth: oauth
         };
+        Object.assign(conf, config);
         super(conf);
     }
 

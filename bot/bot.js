@@ -64,6 +64,7 @@ bot.dialog('/', intents
 );
 
 // Sub-Dialogs
+bot.library(require('./dialogs/user-profile').createLibrary());
 bot.library(require('./dialogs/auth').createLibrary());
 bot.library(require('./dialogs/welcome').createLibrary());
 bot.library(require('./dialogs/filter').createLibrary());
@@ -87,7 +88,7 @@ bot.on('conversationUpdate', (message) => {
     if (message.membersAdded) {
         message.membersAdded.forEach((identity) => {
             if (identity.id === message.address.bot.id) {
-                bot.beginDialog(message.address, 'auth:authenticate', message.address);
+                bot.beginDialog(message.address, 'user-profile:initiate', message.address);
             }
         });
     }

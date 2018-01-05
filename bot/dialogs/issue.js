@@ -6,8 +6,6 @@ const Jira = require("../../jira/jira");
 const lib = new builder.Library('issue');
 const _ = require('underscore');
 
-let jira;
-
 lib.dialog('getByKey', [
      (session, args, next) => {
          if(args && args.redo) {
@@ -31,12 +29,7 @@ lib.dialog('getByKey', [
     async (session,results) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
-            jira = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
+            let jira = new Jira(session.userData.jira);
             const issueNumber = session.dialogData.issueNumber || results.response;
             const issue = await jira.findIssue(issueNumber, "", "id,key,summary,status,assignee,duedate,resolutiondate,issuetype");
             if (issue) {
@@ -79,12 +72,7 @@ lib.dialog('getDevStatus', [
         try {
             if (results && results.response) {
                 session.userData.oauth = session.userData.oauth || {};
-                jira = new Jira({
-                    oauth: {
-                        access_token: session.userData.oauth.accessToken,
-                        access_token_secret: session.userData.oauth.accessTokenSecret,
-                    }
-                });
+                let jira = new Jira(session.userData.jira);
                 const issueNumber = results.response;
                 const issue = await jira.findIssue(issueNumber, "", "id");
                 if (issue && issue.id) {
@@ -119,12 +107,7 @@ lib.dialog('getDevStatus', [
        try {
            session.dialogData.dataType = results.response.entity;
            session.userData.oauth = session.userData.oauth || {};
-           jira = new Jira({
-               oauth: {
-                   access_token: session.userData.oauth.accessToken,
-                   access_token_secret: session.userData.oauth.accessTokenSecret,
-               }
-           });
+           let jira = new Jira(session.userData.jira);
            const devStatus = await jira.getDevStatusDetail(
                                     session.dialogData.issueId,
                                     session.dialogData.applicationType,
@@ -172,12 +155,7 @@ lib.dialog('getDevSummary', [
         try {
             if (results && results.response) {
                 session.userData.oauth = session.userData.oauth || {};
-                jira = new Jira({
-                    oauth: {
-                        access_token: session.userData.oauth.accessToken,
-                        access_token_secret: session.userData.oauth.accessTokenSecret,
-                    }
-                });
+                let jira = new Jira(session.userData.jira);
                 const issueNumber = results.response;
                 const issue = await jira.findIssue(issueNumber, "", "id");
                 if (issue && issue.id) {
@@ -200,12 +178,7 @@ lib.dialog('getDevSummary', [
     async (session,results) => {
        try {
             session.userData.oauth = session.userData.oauth || {};
-            jira = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
+            let jira = new Jira(session.userData.jira);
             const devSummary = await jira.getDevStatusSummary(session.dialogData.issueId);
             /* here goes the handling of the retreived data*/
             session.endDialog("Anything else I can help with?");
@@ -223,16 +196,7 @@ lib.dialog('get', [
     async (session,args, next) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
-            jira  = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
-            /*
-            Object.assign(session.dialogData, args);
-            
-            */
+            let jira = new Jira(session.userData.jira);
             session.conversationData.projects = session.userData.projects;
             const count = await jira.getCount(session.conversationData);
             if(count >= 10) { 
@@ -269,12 +233,7 @@ lib.dialog('get', [
 lib.dialog("fetch", async (session, args) => {
     try {
         session.userData.oauth = session.userData.oauth || {};
-        jira  = new Jira({
-            oauth: {
-                access_token: session.userData.oauth.accessToken,
-                access_token_secret: session.userData.oauth.accessTokenSecret,
-            }
-          });
+        let jira = new Jira(session.userData.jira);
         session.conversationData.projects = session.userData.projects;
         session.sendTyping();
         const result = await jira.searchJira(session.conversationData);

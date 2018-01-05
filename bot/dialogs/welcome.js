@@ -19,7 +19,7 @@ lib.dialog("welcome", [
         session.beginDialog("issue-type:list");
     },
     (session, args) => {
-        session.send("Welcome "+ session.message.user.name +"! I'm Jibo, Jira assistant bot. How may I help you?");
+        session.send("Welcome %s! How may I help you?", session.message.user.name);
         session.delay(60*1000);
         session.send("Type 'help' for guidness");
         session.endDialog();

@@ -44,13 +44,7 @@ lib.dialog('assign', [
      async (session, results, next) => {
         try {
             if (results && results.response) {
-                session.userData.oauth = session.userData.oauth || {};
-                let jira = new Jira({
-                    oauth: {
-                        access_token: session.userData.oauth.accessToken,
-                        access_token_secret: session.userData.oauth.accessTokenSecret,
-                    }
-                });
+                let jira = new Jira(session.userData.jira);
                 const issueNumber =  session.dialogData.issueNumber;
                 const assignee = results.response;
                 const result = await jira.assign(issueNumber, assignee);

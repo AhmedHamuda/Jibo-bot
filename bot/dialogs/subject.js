@@ -14,7 +14,7 @@ lib.dialog('ask', [
         if(results.response) {
             session.conversationData.subject = results.response;
         }
-        session.endDialogWithResult(results);
+        session.endDialog();
     }
 ]);
 

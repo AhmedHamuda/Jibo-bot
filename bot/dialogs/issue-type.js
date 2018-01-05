@@ -66,13 +66,7 @@ lib.dialog('list',
     async (session) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
-            let jira = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
-        
+            let jira = new Jira(session.userData.jira);
             const issueTypes = await jira.listIssueTypes();
             session.conversationData.issueTypes = _.map(issueTypes, (issueType) => { return issueType.name; });
             session.endDialog();

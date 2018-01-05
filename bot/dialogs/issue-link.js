@@ -6,15 +6,13 @@ const lib = new builder.Library('issue-link');
 const _ = require('underscore');
 const helpers = require("../../common/helpers");
 
-let jira;
-
 lib.dialog('get', [
     (session, args, next) => {
         if (args && !args.redo) {
-            session.conversationData.issueType = null;
+            session.conversationData.issueType = undefined;
             session.dialogData.entities = args.entities;
-            const issueType = builder.EntityRecognizer.findEntity(args.entities, 'issueType') || null;
-            if(!_.isNull(issueType)) {
+            const issueType = builder.EntityRecognizer.findEntity(args.entities, 'issueType') || undefined;
+            if(issueType) {
                 session.beginDialog("issue-type:check", issueType.entity);
             } else {
                 next(args);
@@ -45,12 +43,7 @@ lib.dialog('get', [
     async (session,results) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
-            jira = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
+            let jira = new Jira(session.userData.jira);
             const issueNumber = session.dialogData.issueNumber || results.response;
             const issue = await jira.findIssue(issueNumber, "", "issuelinks");
             let issuelinks = issue.fields.issuelinks;

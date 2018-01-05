@@ -8,12 +8,7 @@ lib.dialog('list',
     async (session,args, next) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
-            let jira  = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
+            let jira = new Jira(session.userData.jira);
             const projects = await jira.listProjects();
             session.userData.projects =  _.map(projects, (project) => { return project.key;});
             session.endDialog();

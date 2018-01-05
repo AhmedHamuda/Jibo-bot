@@ -9,23 +9,20 @@ const botURL = process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + proce
 
 lib.dialog("authenticate", 
     (session,args, next) => {
-        if (!session.userData.oauth || !session.userData.oauth.accessToken || !session.userData.oauth.accessTokenSecret) {
-            console.log(args);
+        if (!session.userData.jira || !session.userData.jira.oauth || !session.userData.jira.oauth.access_token || !session.userData.jira.oauth.access_token_secret) {
+            const addressInfo = session.message.address;
             let altButton = builder.CardAction.dialogAction(session, "goodbye", null, "Cancel");
-            if(env.process.JIRA_USER && env.process.JIRA_PASSWORD) {
-                altButton = builder.CardAction.dialogAction(session, "welcome", null, "Proceed without oAuth");
-            }
             let signIn = new builder.HeroCard(session)
                     .text("Please sign-in to Jira")
                     .buttons([
                         builder.CardAction.openUrl(session, botURL 
-                                + "/api/jira/tokenRequest?userId=" + args.user.id
-                                + "&userName=" + args.user.name
-                                + "&botId=" + args.bot.id
-                                + "&addressId=" + args.id
-                                + "&channelId=" + args.channelId
-                                + "&conversationId=" + args.conversation.id
-                                + "&serviceUrl=" + args.serviceUrl, "Sign-in"),
+                                + "/api/jira/tokenRequest?userId=" + addressInfo.user.id
+                                + "&userName=" + addressInfo.user.name
+                                + "&botId=" + addressInfo.bot.id
+                                + "&addressId=" + addressInfo.id
+                                + "&channelId=" + addressInfo.channelId
+                                + "&conversationId=" + addressInfo.conversation.id
+                                + "&serviceUrl=" + addressInfo.serviceUrl, "Sign-in"),
                         altButton
                     ]);
 
@@ -38,6 +35,33 @@ lib.dialog("authenticate",
             session.replaceDialog("welcome:welcome");
         }
 });
+
+lib.dialog("reauthenticate", (session, args) => {
+    if(session.userData.jira) {
+        session.userData.jira.oauth = {};
+    } 
+    session.replaceDialog("auth:authenticate");
+}).triggerAction({
+    matches: /^reauthenticate$/i
+});
+
+lib.dialog("error", [
+    (session, args, next) => {
+        builder.Prompts.choice("Looks like Application link is missing between me and provided Jira Instance, please choose one of the following",
+        ["Reauthenticate", "Reinitiate"],
+        builder.ListStyle.button);
+    },
+    (session, results) => {
+        if(results && results.response) {
+            const opt = results.response.entity;
+            if(opt == "Reauthenticate") {
+                session.replaceDialog("auth:reauthenticate");
+            } else {
+                session.replaceDialog("user-profile:reinitiate");
+            }
+        }
+    }
+]);
 
 // Export createLibrary() function
 module.exports.createLibrary = () => {

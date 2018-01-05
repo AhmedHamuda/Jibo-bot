@@ -67,13 +67,7 @@ lib.dialog('list',
     async (session,args, next) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
-            let jira = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
-        
+            let jira = new Jira(session.userData.jira);
             const statuses = await jira.listStatus();
             session.conversationData.statuses = _.map(statuses, (status) => { return status.name;});
             session.endDialog();
@@ -111,12 +105,7 @@ lib.dialog('update', [
         try {
             if (session.conversationData.issueNumber || (results && results.response)) {
                 const issueNumber = session.conversationData.issueNumber = session.conversationData.issueNumber || results.response;
-                let jira = new Jira({
-                    oauth: {
-                        access_token: session.userData.oauth.accessToken,
-                        access_token_secret: session.userData.oauth.accessTokenSecret,
-                    }
-                });
+                let jira = new Jira(session.userData.jira);
                 const result = await jira.listTransitions(issueNumber);
                 session.conversationData.transitionStatuses = _.map(result.transitions, (transition) => {
                     return { 
@@ -151,12 +140,7 @@ lib.dialog('update', [
     async (session, results, next) => {
         try {
             session.userData.oauth = session.userData.oauth || {};
-            let jira = new Jira({
-                oauth: {
-                    access_token: session.userData.oauth.accessToken,
-                    access_token_secret: session.userData.oauth.accessTokenSecret,
-                }
-            });
+            let jira = new Jira(session.userData.jira);
             const issueNumber =  session.conversationData.issueNumber;
             const transit = session.conversationData.transitionStatus;
             const transationObj = helpers.buildTransitionObj(transit);
@@ -174,7 +158,7 @@ lib.dialog('update', [
         }
     }
 ]).endConversationAction(
-    "endfilter", "Ok. Goodbye.",
+    "endStatusUpdate", "Ok. Goodbye.",
     {
         matches: /^cancel$|^goodbye$|^end$/i,
         confirmPrompt: "This will cancel status update. Are you sure?"

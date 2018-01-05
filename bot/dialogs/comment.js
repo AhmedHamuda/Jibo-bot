@@ -43,12 +43,7 @@ lib.dialog('add', [
         try {
             if (results && results.response) {
                 session.userData.oauth = session.userData.oauth || {};
-                let jira = new Jira({
-                    oauth: {
-                        access_token: session.userData.oauth.accessToken,
-                        access_token_secret: session.userData.oauth.accessTokenSecret,
-                    }
-                });
+                let jira = new Jira(session.userData.jira);
                 const issueNumber =  session.dialogData.issueNumber;
                 const comment = results.response;
                 const result = await jira.addComment(issueNumber, comment);
@@ -96,12 +91,7 @@ lib.dialog('get', [
         try {
             if (session.dialogData.issueNumber || (results && results.response)) {
                 session.userData.oauth = session.userData.oauth || {};
-                let jira = new Jira({
-                    oauth: {
-                        access_token: session.userData.oauth.accessToken,
-                        access_token_secret: session.userData.oauth.accessTokenSecret,
-                    }
-                });
+                let jira = new Jira(session.userData.jira);
                 const issueNumber =  session.dialogData.issueNumber || results.response;
                 const result = await jira.getComments(issueNumber);
                 if(result){
