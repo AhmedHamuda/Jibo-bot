@@ -7,7 +7,6 @@ const _ = require("underscore");
 lib.dialog('list',
     async (session,args, next) => {
         try {
-            session.userData.oauth = session.userData.oauth || {};
             let jira = new Jira(session.userData.jira);
             const projects = await jira.listProjects();
             session.userData.projects =  _.map(projects, (project) => { return project.key;});

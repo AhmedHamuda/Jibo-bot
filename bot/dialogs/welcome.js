@@ -6,22 +6,11 @@ const builder = require('botbuilder');
 const lib = new builder.Library('welcome');
 
 lib.dialog("welcome", [
-    (session, args, next) => {
-        session.beginDialog("project:list");
+    (session) => {
+        session.beginDialog("user-profile:setup");
     },
-    (session, args) => {
-        session.beginDialog("status:list");
-    },
-    (session, args) => {
-        session.beginDialog("priority:list");
-    },
-    (session, args) => {
-        session.beginDialog("issue-type:list");
-    },
-    (session, args) => {
+    (session) => {
         session.send("Welcome %s! How may I help you?", session.message.user.name);
-        session.delay(60*1000);
-        session.send("Type 'help' for guidness");
         session.endDialog();
     }
 ]);

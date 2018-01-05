@@ -6,6 +6,7 @@ const teams = require("botbuilder-teams");
 const apiairecognizer = require('botbuilder-apiai');
 const redis = require("redis");
 const RedisStorage = require("botbuilder-redis-storage");
+const Setup = require("../middlewares/setup");
 // Redis client
 const redisClient = redis.createClient(process.env.REDIS_PORT, process.env.REDIS_HOST, {prefix: "bot-storage:" });
 const storage = new RedisStorage(redisClient);
@@ -24,16 +25,19 @@ const bot = new builder.UniversalBot(connector, {
     }
 });
 bot.set("storage", storage);
-/*
+
 bot.use({
     botbuilder: (session, next) => {
-        ManualSupport.SaveUserData(session, next);
+        Setup.checkJiraConfig(session, next);
+        Setup.checkSetup(session, next);
+        //ManualSupport.SaveUserData(session, next);
     },
     send: (event, next) => {
-        ManualSupport.logOutgoingMessage(event, next);
+        next();
+        //ManualSupport.logOutgoingMessage(event, next);
     }
 })
-*/
+
 
 const recognizer = new apiairecognizer(process.env.APIAI_CLIENT_TOKEN);
 const intents = new builder.IntentDialog({

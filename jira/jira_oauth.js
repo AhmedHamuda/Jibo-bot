@@ -87,9 +87,8 @@ class JiraOAuth {
                             access_token: oauth_access_token,
                             access_token_secret: oauth_access_token_secret,
                         };
-                        session.save();
-                        let dialog = bot.findDialog("welcome","welcome");
-                        dialog.begin(session);
+                        //session.save();
+                        session.beginDialog("welcome:welcome");
                         res.send( "successfully authenticated.");
                     }
                 });

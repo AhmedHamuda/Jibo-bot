@@ -54,6 +54,23 @@ lib.dialog("reinitiate", (session, args) => {
     matches: /^reinitiate$/i
 });
 
+lib.dialog("setup", [
+    (session, args, next) => {
+        session.beginDialog("project:list");
+    },
+    (session, args) => {
+        session.beginDialog("status:list");
+    },
+    (session, args) => {
+        session.beginDialog("priority:list");
+    },
+    (session, args) => {
+        session.beginDialog("issue-type:list");
+    },
+    (session, args) => {
+        session.endDialog();
+    },
+]);
 // Export createLibrary() function
 module.exports.createLibrary = () => {
     return lib.clone();

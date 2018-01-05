@@ -19,18 +19,14 @@ module.exports = class Jira extends JiraApi {
         } else {
             throw new Error("missing OAuth consumer key and consumer secret");
         }
-        Object.assign(config.oauth, oauth);
         let conf = {
-            //protocol: process.env.JIRA_PROTOCOL,
-            //host: process.env.JIRA_HOSTNAME,
-            //sername: process.env.JIRA_USER,
-            //password: process.env.JIRA_PASSWORD,
             apiVersion: process.env.JIRA_REST_API_Version,
-            //port: process.env.JIRA_PORT,
             strictSSL: false,
-            //oauth: oauth
+            oauth: oauth
         };
         Object.assign(conf, config);
+        Object.assign(oauth, config.oauth);
+        
         super(conf);
     }
 

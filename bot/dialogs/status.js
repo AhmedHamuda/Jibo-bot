@@ -66,7 +66,6 @@ lib.dialog('check',
 lib.dialog('list', 
     async (session,args, next) => {
         try {
-            session.userData.oauth = session.userData.oauth || {};
             let jira = new Jira(session.userData.jira);
             const statuses = await jira.listStatus();
             session.conversationData.statuses = _.map(statuses, (status) => { return status.name;});

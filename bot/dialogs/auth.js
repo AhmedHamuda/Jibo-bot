@@ -29,7 +29,7 @@ lib.dialog("authenticate",
             let msg = new builder.Message(session);
             msg.text("Hi "+ session.message.user.name + ", I cannot recognize you.")
             msg.attachments([signIn]);
-            session.send(msg);
+            session.endDialog(msg);
         }
         else {
             session.replaceDialog("welcome:welcome");
