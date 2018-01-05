@@ -38,29 +38,35 @@ lib.dialog('ask', [
     }
 ]);
 
-lib.dialog('check', 
+lib.dialog('check', [
     (session, args) => {
-    try {
-        if(args) {
-                session.conversationData.issueType = session.conversationData.issueType || [];
-                let original = _.map(session.conversationData.issueTypes, (issueType) => {return issueType.toLowerCase();});
-                args = _.isArray(args) ? _.map(args, (issueType) => {return issueType.toLowerCase();}) : [args];
-                const diff = _.difference(args, original);
-                if (diff.length > 0) {
-                    session.send("Requested issue types ("+ diff.join(", ") +") are not available in Jira");
-                    session.conversationData.issueType = _.intersection(args, original) || [];
-                    session.replaceDialog("issue-type:ask", {redo: true});
-                } else {
-                    session.conversationData.issueType = args;
-                    session.endDialog();
-                }
-        } else {
-            session.endDialog();
+        session.dialogData.args = args;
+        session.beginDialog("issue-type:list");
+    },
+    (session, args) => {
+        try {
+            let args = session.dialogData.args;
+            if(args) {
+                    session.conversationData.issueType = session.conversationData.issueType || [];
+                    let original = _.map(session.conversationData.issueTypes, (issueType) => {return issueType.toLowerCase();});
+                    args = _.isArray(args) ? _.map(args, (issueType) => {return issueType.toLowerCase();}) : [args];
+                    const diff = _.difference(args, original);
+                    if (diff.length > 0) {
+                        session.send("Requested issue types ("+ diff.join(", ") +") are not available in Jira");
+                        session.conversationData.issueType = _.intersection(args, original) || [];
+                        session.replaceDialog("issue-type:ask", {redo: true});
+                    } else {
+                        session.conversationData.issueType = args;
+                        session.endDialog();
+                    }
+            } else {
+                session.endDialog();
+            }
+        } catch(error) {
+            session.endDialog("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
         }
-    } catch(error) {
-        session.endDialog("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
     }
-});
+]);
 
 lib.dialog('list', 
     async (session) => {
@@ -71,7 +77,11 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.endDialog("Oops! an error accurd: %s, while retrieving the issue types, please try again later", error);
+            if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
+            } else {
+                session.endDialog("Oops! an error accurd: %s, while retrieving the issue types, please try again later", error);
+            }
         } 
 });
 

@@ -34,14 +34,19 @@ lib.dialog('ask', [
             session.replaceDialog("status:ask", {redo: true});
         }
         else{
-            session.endDialog(); 
+            session.endDialogWithResult(); 
         }
     }
 ]);
 
-lib.dialog('check', 
+lib.dialog('check', [
     (session, args) => {
+        session.dialogData.args = args;
+        session.beginDialog("status:list");
+    },
+    (session) => {
         try {
+        let args = session.dialogData.args;
         if(args) {  
                 session.conversationData.status = session.conversationData.status || [];
                 let original = _.map(session.conversationData.statuses, (status) => {return status.toLowerCase();});
@@ -61,7 +66,7 @@ lib.dialog('check',
     } catch (error) {
         session.endDialog("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
     }
-});
+}]);
 
 lib.dialog('list', 
     async (session,args, next) => {
@@ -72,7 +77,11 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.endDialog("Oops! an error accurd: %s, while retrieving the statuses, please try again later", error);
+            if (error == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
+            } else {
+                session.endDialog("Oops! an error accurd: %s, while retrieving the statuses, please try again later", error);
+            }
         }
     });
 
@@ -128,6 +137,8 @@ lib.dialog('update', [
         } catch (error) {
             if(error.statusCode == 404) {
                 session.endDialog("Issue doesn't exist or you dont have permission to view it!");
+            } else if (error == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }
@@ -151,6 +162,8 @@ lib.dialog('update', [
             } else if(error.statusCode == 400) {
                 session.send("Provided data is not accepted by Jira");
                 session.replaceDialog("status:update");
+            } else if (error == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }

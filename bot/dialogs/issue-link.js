@@ -76,6 +76,8 @@ lib.dialog('get', [
         } catch(error) {
             if(error.statusCode == 404) {
                 session.replaceDialog("issue-link:get", {redo: true});
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }

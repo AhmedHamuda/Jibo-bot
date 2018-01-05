@@ -58,6 +58,8 @@ lib.dialog('add', [
             } else if(error.statusCode == 401) {
                 session.send("Sorry %s, You dont have permission to add comment to this issue", session.message.address.user.name)
                 session.endDialog();
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }
@@ -122,6 +124,8 @@ lib.dialog('get', [
             } else if(error.statusCode == 401) {
                 session.send("Sorry %s, You dont have permission to assign the issue", session.message.address.user.name)
                 session.endDialog();
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }

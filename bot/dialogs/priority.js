@@ -37,9 +37,14 @@ lib.dialog('ask', [
     }
 ]);
 
-lib.dialog('check', 
+lib.dialog('check', [
+    (session, args) => {
+        session.dialogData.args = args;
+        session.beginDialog("priority:list");
+    },
     (session, args) => {
         try {
+            let args = session.dialogData.args;
             if(args) {
                     session.conversationData.priority = session.conversationData.priority || [];
                     let original = _.map(session.conversationData.priorities, (priority) => {return priority.toLowerCase();});
@@ -58,9 +63,14 @@ lib.dialog('check',
             }
         }
         catch(error) {
-            session.endDialog("Oops! an error accurd: %s, while retrieving the checking priorities, please try again later", error);
-        } 
-});
+            if (error == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
+            } else {
+                session.endDialog("Oops! an error accurd: %s, while retrieving the checking priorities, please try again later", error);
+            }
+        }
+    }
+]);
 
 lib.dialog('list', 
     async (session) => {
@@ -72,7 +82,11 @@ lib.dialog('list',
             session.endDialog();
         }
         catch(error) {
-            session.endDialog("Oops! an error accurd: %s, while retrieving the priorities, please try again later", error);
+            if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
+            } else {
+                session.endDialog("Oops! an error accurd: %s, while retrieving the priorities, please try again later", error);
+            }
         } 
     });
 

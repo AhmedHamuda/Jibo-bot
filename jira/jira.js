@@ -19,15 +19,18 @@ module.exports = class Jira extends JiraApi {
         } else {
             throw new Error("missing OAuth consumer key and consumer secret");
         }
+        Object.assign(oauth, config.oauth);
         let conf = {
             apiVersion: process.env.JIRA_REST_API_Version,
             strictSSL: false,
-            oauth: oauth
         };
         Object.assign(conf, config);
-        Object.assign(oauth, config.oauth);
-        
-        super(conf);
+        conf.oauth = oauth;
+        if(!oauth.access_token || !oauth.access_token_secret) {
+            throw new Error(process.env.JIRA_AUTHERR);
+        } else {
+            super(conf);
+        }
     }
 
     async getCount(args) {
@@ -42,7 +45,7 @@ module.exports = class Jira extends JiraApi {
         options = options ? options : {}; 
         options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate", "resolutiondate", "issuetype"];
         query = this.parseFilterParams(args);
-        orderBy = "order by " + (this.parseOrderParams(args.order) || "priority ASC, duedate ASC, status ASC");
+        orderBy = args.order.orderBy ? "order by " + (this.parseOrderParams(args.order)): "";
         queryString = _s.sprintf("%s %s", query, orderBy);
         return super.searchJira(queryString, options);
     }
@@ -53,7 +56,7 @@ module.exports = class Jira extends JiraApi {
         args.assignee && paramsArray.push(_s.sprintf("assignee in (%s)", _.isArray(args.assignee) ? args.assignee.join(",") : args.assignee));
         if(args.project) {
             paramsArray.push(_s.sprintf("project in (%s)",  _.isArray(args.project) ? args.project.join(",") :  args.project));
-        }else {
+        }else if (args.projects && args.projects.length > 0) {
             paramsArray.push(_s.sprintf("project in (%s)", args.projects.join(",")));
         }
         args.priority && paramsArray.push(_s.sprintf("priority in (%s)", args.priority));

@@ -9,7 +9,13 @@ const botURL = process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + proce
 
 lib.dialog("authenticate", 
     (session,args, next) => {
-        if (!session.userData.jira || !session.userData.jira.oauth || !session.userData.jira.oauth.access_token || !session.userData.jira.oauth.access_token_secret) {
+        if (!session.userData.jira || !session.userData.jira.host || !session.userData.jira.protocol) {
+            session.replaceDialog("user-profile:initiate", {redo: true});
+        }
+        else if (!session.userData.jira ||
+            !session.userData.jira.oauth ||
+            !session.userData.jira.oauth.access_token ||
+            !session.userData.jira.oauth.access_token_secret) {
             const addressInfo = session.message.address;
             let altButton = builder.CardAction.dialogAction(session, "goodbye", null, "Cancel");
             let signIn = new builder.HeroCard(session)
@@ -27,7 +33,7 @@ lib.dialog("authenticate",
                     ]);
 
             let msg = new builder.Message(session);
-            msg.text("Hi "+ session.message.user.name + ", I cannot recognize you.")
+            //msg.text("Hi "+ session.message.user.name + ", I cannot recognize you.")
             msg.attachments([signIn]);
             session.endDialog(msg);
         }

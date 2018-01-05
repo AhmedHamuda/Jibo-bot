@@ -53,6 +53,8 @@ lib.dialog('getByKey', [
         } catch(error) {
             if(error.statusCode == 404) {
                 session.replaceDialog("issue:getByKey", {redo: true});
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }
@@ -87,6 +89,8 @@ lib.dialog('getDevStatus', [
         } catch (error) {
             if(error.statusCode == 404) {
                 session.replaceDialog("issue:getDevStatus", {redo: true});
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }
@@ -136,6 +140,8 @@ lib.dialog('getDevStatus', [
        } catch(error) {
             if(error.statusCode == 404) {
                 session.replaceDialog("issue:getDevStatus", {redo: true});
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }
@@ -170,6 +176,8 @@ lib.dialog('getDevSummary', [
         } catch (error) {
             if(error.statusCode == 404) {
                 session.replaceDialog("issue:getDevSummary", {redo: true});
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }
@@ -185,6 +193,8 @@ lib.dialog('getDevSummary', [
        } catch(error) {
             if(error.statusCode == 404) {
                 session.replaceDialog("issue:getDevSummary", {redo: true});
+            } else if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
             }
@@ -211,7 +221,11 @@ lib.dialog('get', [
             }
         }
         catch(error) {
-            session.endDialog("Oops! An error accurd: %s, while retrieving the tickets. Please try again later", error.errorMessages || error);
+            if (error.message == process.env.JIRA_AUTHERR) {
+                session.replaceDialog("user-profile:initiate", {redo: true});
+            } else {
+                session.endDialog("Oops! An error accurd: %s, while retrieving the tickets. Please try again later", error.errorMessages || error);
+            }
         }
         
     },
@@ -256,7 +270,11 @@ lib.dialog("fetch", async (session, args) => {
         session.endDialog("Anything else I can help with?");
     }
     catch(error) {
-        session.endDialog("Oops! An error accurd: %s, while retrieving the tickets. Please try again later", error.errorMessages || error);
+        if (error.message == process.env.JIRA_AUTHERR) {
+            session.replaceDialog("user-profile:initiate", {redo: true});
+        } else {
+            session.endDialog("Oops! An error accurd: %s, while retrieving the tickets. Please try again later", error.errorMessages || error);
+        }
     }
 });
 

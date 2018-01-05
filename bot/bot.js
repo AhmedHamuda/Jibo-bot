@@ -28,8 +28,8 @@ bot.set("storage", storage);
 
 bot.use({
     botbuilder: (session, next) => {
-        Setup.checkJiraConfig(session, next);
-        Setup.checkSetup(session, next);
+        next();
+        //Setup.checkSetup(session, next);
         //ManualSupport.SaveUserData(session, next);
     },
     send: (event, next) => {

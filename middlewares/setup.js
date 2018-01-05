@@ -1,26 +1,23 @@
 "use strict";
-module.exports = class Setup {
-    static checkJiraConfig (session, next) {
-        if (session.message.text != "reauthenticate" || session.message.text != "reinitiate" || session.message.text.length > 0) {
-            if (!session.userData.jira || !session.userData.jira.host || !session.userData.jira.port || !session.userData.jira.protocol
-            || !session.userData.jira.oauth || !session.userData.jira.oauth.access_token || !session.userData.jira.oauth.access_token_secret) {
-                session.replaceDialog("user-profile:initiate", {redo: true});
-            } else {
-                next();
-            }
-        } else {
+class Setup {
+    static checkSetup (session, next) {
+        if (Setup.allowedActions.indexOf(session.message.text) > -1) {
+            next();
+        } else if (session.userData.jira && session.userData.jira.host && session.userData.jira.oauth &&
+             (!session.userData.projects || !session.conversationData.issueTypes ||
+                 !session.conversationData.statuses || !session.conversationData.priorities)) {
+            session.beginDialog("user-profile:setup");
+        } else if(session.message.text.length == 0 && (!session.userData.jira || !session.userData.jira.host || !session.userData.jira.oauth)) {
+            session.beginDialog("user-profile:initiate");
+        } else if(!session.userData.jira || !session.userData.jira.host || !session.userData.jira.oauth) {
+            session.beginDialog("user-profile:initiate", {redo: true});
+        }
+         else {
             next();
         }
-        
     }
+}
 
-    static checkSetup (session, next) {
-        if(session.userData.jira && session.userData.jira.oauth) {
-            if (!session.userData.projects || !session.conversationData.issueTypes || !session.conversationData.statuses || !session.conversationData.priorities) {
-                session.replaceDialog("user-profile:setup");
-            } else {
-                next();
-            }
-        }
-    }
-} 
+Setup.allowedActions = ["help","reinitiate","reauthenticate"];
+
+module.exports = Setup;
