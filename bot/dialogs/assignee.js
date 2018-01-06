@@ -6,8 +6,7 @@ const lib = new builder.Library('assignee');
 
 lib.dialog('ask', [
     (session) => {
-        builder.Prompts.text(session,"please list the assignee list separated by coma",
-                builder.ListStyle.button);
+        builder.Prompts.text(session,"please list the assignee name");
     },
     (session, results) => {
         if(results.response) {
@@ -22,12 +21,16 @@ lib.dialog('assign', [
         if(args && args.redo) {
             builder.Prompts.text(session, "Please enter a valid issue number");
          } else if (args && args.entities) {
-            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || null;
-            if(_.isNull(issueNumber)) {
+            const issueNumber = builder.EntityRecognizer.findEntity(args.entities, 'issueNumber') || undefined;
+            if(!issueNumber) {
                 builder.Prompts.text(session, 'Please enter the issue number');
             } else {
-                session.dialogData.issueNumber = issueNumber.entity;
-                next();
+                session.dialogData.issueNumber = helpers.checkIssueNumberFormat(issueNumber.entity.replace(/[^0-9a-zA-Z\-]/gi, ''));
+                if(!session.conversationData.issueNumber) {
+                    builder.Prompts.text(session, 'Please enter the issue number again');
+                } else {
+                    next();
+                }
             }
          } else {
             builder.Prompts.text(session, 'Please enter the issue number');
@@ -60,7 +63,7 @@ lib.dialog('assign', [
                 session.send("Sorry %s, You dont have permission to assign the issue", session.message.address.user.name)
                 session.endDialog();
             } else {
-                session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         }
      }

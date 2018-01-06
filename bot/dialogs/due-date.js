@@ -7,7 +7,7 @@ let lib = new builder.Library('due-date');
 
 lib.dialog('ask', [ 
     (session) => {
-        builder.Prompts.time(session, "what the maximum end date of the tickets?");
+        builder.Prompts.time(session, "What's the end date of the tickets?");
     },
     (session, results) => {
         if (results.response) {

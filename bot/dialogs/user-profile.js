@@ -11,7 +11,7 @@ lib.dialog("initiate", [
     (session,args, next) => {
         if (!session.userData.jira || !session.userData.jira.host || !session.userData.jira.port || !session.userData.jira.protocol) {
             if(args && args.redo) {
-                builder.Prompts.text(session, "Please enter your jira instance URL (example: https://jira.example.org:81)");
+                builder.Prompts.text(session, "Please enter your jira instance URL (example: https://jira.example.org:81), or 'cancel' to skip the step, but won't be able to use jira :(");
             } else {
                 session.send("Hi %s, I'm Jira Assistant bot", session.message.user.name)
                 builder.Prompts.text(session, "To get started please enter your jira instance URL (example: https://jira.example.org:81)");
@@ -35,12 +35,12 @@ lib.dialog("initiate", [
                 session.replaceDialog("user-profile:initiate");
             }
         } catch (error) {
-            session.send("Parsing url failed!");
+            session.send("Invalid URL!");
             session.replaceDialog("user-profile:initiate", {redo: true});
         }
     }
 ]).endConversationAction(
-    "endUserProfile", "Ok. Goodbye.",
+    "endUserProfile", "Connecting to Jira cancelled..",
     {
         matches: /^cancel$|^goodbye$|^end$/i,
         confirmPrompt: "This will cancel status update. Are you sure?"

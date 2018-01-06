@@ -7,8 +7,7 @@ var lib = new builder.Library('subject');
 
 lib.dialog('ask', [ 
     (session) => {
-        builder.Prompts.text(session,"what subject are you looking for?",
-                builder.ListStyle.button);
+        builder.Prompts.text(session,"What subject are you looking for?");
     },
     (session, results) => {
         if(results.response) {

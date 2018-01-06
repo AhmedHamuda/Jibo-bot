@@ -53,7 +53,7 @@ lib.dialog("reauthenticate", (session, args) => {
 
 lib.dialog("error", [
     (session, args, next) => {
-        builder.Prompts.choice("Looks like Application link is missing between me and provided Jira Instance, please choose one of the following",
+        builder.Prompts.choice("Looks like Application link is missing between me and provided Jira Instance, please choose one of the followings:",
         ["Reauthenticate", "Reinitiate"],
         builder.ListStyle.button);
     },

@@ -76,7 +76,6 @@ bot.library(require('./dialogs/text-search').createLibrary());
 bot.library(require('./dialogs/issue').createLibrary());
 bot.library(require('./dialogs/issue-type').createLibrary());
 bot.library(require('./dialogs/issue-link').createLibrary());
-bot.library(require('./dialogs/labels/stream').createLibrary());
 bot.library(require('./dialogs/due-date').createLibrary());
 bot.library(require('./dialogs/status').createLibrary());
 bot.library(require('./dialogs/transition').createLibrary());

@@ -64,7 +64,7 @@ lib.dialog('check', [
             session.endDialog();
         }
     } catch (error) {
-        session.endDialog("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
+        session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
     }
 }]);
 
@@ -80,7 +80,7 @@ lib.dialog('list',
             if (error == process.env.JIRA_AUTHERR) {
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
-                session.endDialog("Oops! an error accurd: %s, while retrieving the statuses, please try again later", error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         }
     });
@@ -140,7 +140,7 @@ lib.dialog('update', [
             } else if (error == process.env.JIRA_AUTHERR) {
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
-                session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         }
     },
@@ -165,7 +165,7 @@ lib.dialog('update', [
             } else if (error == process.env.JIRA_AUTHERR) {
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
-                session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         }
     }
@@ -216,7 +216,7 @@ lib.dialog('transitionCheck',
                 session.endDialog();
             }    
     } catch (error) {
-        session.endDialog("Oops! an error accurd: %s, while checking the statuses, please try again later", error);
+        session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
     }
 });
 

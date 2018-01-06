@@ -66,7 +66,7 @@ lib.dialog('check', [
             if (error == process.env.JIRA_AUTHERR) {
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
-                session.endDialog("Oops! an error accurd: %s, while retrieving the checking priorities, please try again later", error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         }
     }
@@ -85,7 +85,7 @@ lib.dialog('list',
             if (error.message == process.env.JIRA_AUTHERR) {
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
-                session.endDialog("Oops! an error accurd: %s, while retrieving the priorities, please try again later", error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         } 
     });

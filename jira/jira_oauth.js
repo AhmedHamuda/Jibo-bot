@@ -87,7 +87,7 @@ class JiraOAuth {
                             access_token: oauth_access_token,
                             access_token_secret: oauth_access_token_secret,
                         };
-                        //session.save();
+                        session.send("You've successfully Authenticated!")
                         session.beginDialog("welcome:welcome");
                         res.send( "successfully authenticated.");
                     }

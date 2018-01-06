@@ -35,6 +35,15 @@ lib.dialog('/', [
         }
      },
      (session, args, next) => {
+        session.conversationData.project = undefined;
+        const project = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'project') || undefined;
+        if(project) {
+            session.beginDialog("project:check", project.entity);
+        } else {
+            next();
+        }
+     },
+     (session, args, next) => {
         const subject = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'subject') || undefined;
         session.conversationData.subject = subject && subject.entity;
         next();
@@ -67,7 +76,7 @@ lib.dialog('/', [
      }
 ])
 .endConversationAction(
-    "endTextSearch", "Ok. Goodbye.",
+    "endTextSearch", "Searching cancelled.",
     {
         matches: /^cancel$|^goodbye$|^end$/i,
         confirmPrompt: "This will cancel your search. Are you sure?"

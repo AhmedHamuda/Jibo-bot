@@ -61,7 +61,7 @@ lib.dialog('add', [
             } else if (error.message == process.env.JIRA_AUTHERR) {
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
-                session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         }
      }
@@ -127,7 +127,7 @@ lib.dialog('get', [
             } else if (error.message == process.env.JIRA_AUTHERR) {
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
-                session.endDialog("Oops! An error accurd: %s. Please try again", error.errorMessages || error);
+                session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
             }
         }
      }
