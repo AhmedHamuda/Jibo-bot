@@ -9,8 +9,9 @@ lib.dialog('/', [
     async (session,args, next) => {
         try {
             let jira = new Jira(session.userData.jira);
+            const me = await jira.getCurrentUser();
             args.entities.assignee = {
-                entity: await jira.getCurrentUser()
+                entity: me.key
             };
             next(args);
         } catch (error) {
@@ -23,11 +24,12 @@ lib.dialog('/', [
     },
     async (session, args) => {
         try {
-            if(args && args.entities && args.entities.status && !_.contains(args.entities.status.entity, "open")) {
+            const status = builder.EntityRecognizer.findEntity(args.entities, 'status') || undefined;
+            if(status && !_.contains(status.entity, "open")) {
                 session.replaceDialog("text-search:/", args);
             } else {
                 let jira = new Jira(session.userData.jira);
-                const openOnly = args && args.entities && args.entities.status && _.contains(args.entities.status.entity, "open");
+                const openOnly = status && _.contains(status.entity, "open") || false;
                 const result = await jira.getUsersIssues(args.entities.assignee.entity, openOnly);
                 let cards = _.map(result.issues, (issue,i) => {
                     const assignee = !_.isNull(issue.fields.assignee) ? issue.fields.assignee.displayName : "unassigned";
@@ -41,9 +43,9 @@ lib.dialog('/', [
                             );
                 });
                 let msg = new builder.Message(session);
-                msg.text("here! ordered by date and priority!")
                 msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
                 msg.attachments(cards);
+                msg.text("Total of %s tickets", cards.length);
                 session.send(msg);
                 session.endDialog("Anything else I can help with?");
             }

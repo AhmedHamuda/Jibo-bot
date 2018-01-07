@@ -43,9 +43,9 @@ module.exports = class Jira extends JiraApi {
     searchJira (args, options) {
         let query, queryString, orderBy;
         options = options ? options : {}; 
-        options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "assignee", "duedate", "resolutiondate", "issuetype"];
-        query = this.parseFilterParams(args);
-        orderBy = args.order.orderBy ? "order by " + (this.parseOrderParams(args.order)): "";
+        options.fields = options.fields ? options.fields : ["id", "key", "summary", "status", "priority", "assignee", "duedate", "resolutiondate", "issuetype"];
+        query = _.isObject(args) ? this.parseFilterParams(args) : args;
+        orderBy = args.order && args.order.orderBy ? "order by " + (this.parseOrderParams(args.order)): "";
         queryString = _s.sprintf("%s %s", query, orderBy);
         return super.searchJira(queryString, options);
     }
@@ -82,6 +82,8 @@ module.exports = class Jira extends JiraApi {
             for (var i = 0; i <= orderProps; i++) {
                 orderArray.push(args.orderBy[i] + " " + args.orderByDirection[i]);
             }
+        } else {
+            orderArray = args.orderBy;
         }
        
         return orderArray.join(_s.quote(",", " "));

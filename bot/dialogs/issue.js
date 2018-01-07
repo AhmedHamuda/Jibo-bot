@@ -214,7 +214,8 @@ lib.dialog('get', [
                 "yes|no",
                 builder.ListStyle.button);
             } else if (count == 0) {
-                session.endDialog("TThere is no ticket matching the search parameters, please use different paramaters");
+                session.endDialog("There are no tickets matching the search parameters, please use different paramaters");
+                session.clearDialogStack();
             }
             else {
                 session.replaceDialog("issue:fetch", session.conversationData);
@@ -225,6 +226,7 @@ lib.dialog('get', [
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
+                session.clearDialogStack();
             }
         }
         
@@ -263,9 +265,10 @@ lib.dialog("fetch", async (session, args) => {
                     );
         });
         let msg = new builder.Message(session);
-        msg.text("here! ordered by date and priority!")
+        msg.text("Here you go!")
         msg.attachmentLayout(builder.AttachmentLayout.list/*.carousel*/)
         msg.attachments(cards);
+        msg.text("Total of %s tickets", cards.length);
         session.send(msg);
         session.endDialog("Anything else I can help with?");
     }
@@ -274,6 +277,7 @@ lib.dialog("fetch", async (session, args) => {
             session.replaceDialog("user-profile:initiate", {redo: true});
         } else {
             session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
+            session.clearDialogStack();
         }
     }
 });

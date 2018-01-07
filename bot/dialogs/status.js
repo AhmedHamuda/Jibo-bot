@@ -34,7 +34,7 @@ lib.dialog('ask', [
             session.replaceDialog("status:ask", {redo: true});
         }
         else{
-            session.endDialogWithResult(); 
+            session.endDialog(); 
         }
     }
 ]);
@@ -81,6 +81,7 @@ lib.dialog('list',
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
+                session.clearDialogStack();
             }
         }
     });
@@ -166,6 +167,7 @@ lib.dialog('update', [
                 session.replaceDialog("user-profile:initiate", {redo: true});
             } else {
                 session.endDialog("Oops! %s. Please try again", (error.error && _.first(error.error.errorMessages)) || error.message || error);
+                session.clearDialogStack();
             }
         }
     }
