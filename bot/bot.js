@@ -29,7 +29,6 @@ bot.set("storage", storage);
 bot.use({
     botbuilder: (session, next) => {
         next();
-        //Setup.checkSetup(session, next);
         //ManualSupport.SaveUserData(session, next);
     },
     send: (event, next) => {
@@ -56,17 +55,63 @@ bot.dialog('/', intents
     .matches("issue_dev_status", "issue:getDevStatus")
     .matches("issue_dev_summary", "issue:getDevSummary")
     .matches("help", "help:/")
-    .onDefault((session, args) => {
-        let fulfillment = builder.EntityRecognizer.findEntity(args.entities, 'fulfillment'); 
-        if (fulfillment && fulfillment.entity && fulfillment.entity.length > 0) { 
-            let speech = fulfillment.entity; 
-            session.send(speech); 
-        }else{ 
-            session.send('Sorry...not sure how to respond to that');    
-        } 
-    })
+    .onDefault([
+        (session, args) => {
+            let fulfillment = builder.EntityRecognizer.findEntity(args.entities, 'fulfillment');
+            /*
+            session.conversationData.userAtempts = session.conversationData.userAtempts || 0;
+            session.conversationData.userAtempts++;
+            */
+            if (fulfillment && fulfillment.entity && fulfillment.entity.length > 0 && session.conversationData.userAtempts < 5) {
+                let speech = fulfillment.entity; 
+                session.send(speech); 
+            } else {
+                session.send("Sorry...not sure how to respond to that");
+                /*
+                builder.Prompts.choice(session,"Sorry...not sure how to respond to that, would you like to contact support?",
+                "yes|no",
+                builder.ListStyle.button);
+                */
+            } 
+        },
+        (session, results) => {
+            if(results.response.entity == "yes") {
+                session.replaceDialog("ask");
+            }
+            else {
+                session.endDialog("Please type 'help' for guideness"); 
+            }
+        }
+    ])
 );
-
+/*
+bot.dialog("ask",
+    (session) => {
+        session.send("starting conversation with Ahmed Hamuda");
+        session.conversationData.manualSupport = true;
+        const address = {
+            serviceUrl: session.message.address.serviceUrl,
+            bot: {
+                id: session.message.address.bot.id,
+                name: session.message.address.bot.name
+            },
+            channelId: session.message.address.channelId,
+            user: {
+                id:"default-user",
+                name: "User"
+            }
+        }
+        bot.loadSession(address, (error, mSession) => {
+            if(error){
+                console.log(error);
+            } else{
+                let msg = new builder.Message(mSession);
+                msg.text("Hi");
+                bot.send(msg);
+            }
+        })
+});
+*/
 // Sub-Dialogs
 bot.library(require('./dialogs/user-profile').createLibrary());
 bot.library(require('./dialogs/auth').createLibrary());
@@ -85,6 +130,7 @@ bot.library(require('./dialogs/subject').createLibrary());
 bot.library(require('./dialogs/assignee').createLibrary());
 bot.library(require('./dialogs/my-issues').createLibrary());
 bot.library(require('./dialogs/comment').createLibrary());
+//bot.library(require('./dialogs/manual').createLibrary());
 //bot.library(require('./dialogs/settings').createLibrary());
 bot.library(require('./dialogs/help').createLibrary());
 bot.on('conversationUpdate', (message) => {

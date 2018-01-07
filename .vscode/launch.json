@@ -7,8 +7,48 @@
         {
             "type": "node",
             "request": "launch",
+            "protocol": "inspector",
             "name": "Launch Program",
-            "program": "${workspaceRoot}\\app.js"
+            "program": "${workspaceRoot}\\app.js",
+            "stopOnEntry": false,
+            "address": "localhost",
+            "runtimeArgs": [
+                "--nolazy",
+                "--no-warnings",
+                "--expose-gc",
+                "--inspect=9329"
+            ],
+            "port": 9329
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "protocol": "inspector",
+            "name": "Attach to worker 1",
+            "stopOnEntry": false,
+            "address": "localhost",
+            "port": 9330,
+            "timeout": 30000
+        },
+        {
+            "type": "node",
+            "request": "attach",
+            "protocol": "inspector",
+            "name": "Attach to worker 2",
+            "stopOnEntry": false,
+            "address": "localhost",
+            "port": 9331,
+            "timeout": 30000
+        },
+    ],
+    "compounds": [
+        {
+            "name": "Debug Cluster",
+            "configurations": [
+                "Launch Program",
+                "Attach to worker 1",
+                "Attach to worker 2"
+            ]
         }
     ]
 }

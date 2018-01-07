@@ -1,6 +1,5 @@
 "use strict";
 
-const util = require('util');
 const builder = require('botbuilder');
 const { URL } = require('url');
 const lib = new builder.Library('user-profile');

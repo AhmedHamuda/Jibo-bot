@@ -1,8 +1,6 @@
 "use strict";
 
-const util = require('util');
 const builder = require('botbuilder');
-
 const lib = new builder.Library('auth');
 
 const botURL = process.env.PROTOCOL + "://" + process.env.HOSTNAME + ":" + process.env.PORT;
