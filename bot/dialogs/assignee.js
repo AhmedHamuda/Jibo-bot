@@ -4,9 +4,27 @@ const builder = require('botbuilder');
 const Jira = require("../../jira/jira");
 const lib = new builder.Library('assignee');
 const helpers = require("../../common/helpers");
+
+lib.dialog('confirm', [ 
+    (session, args) => {
+        session.conversationData.assignee = args;
+        builder.Prompts.choice(session,`Is "${args}" the assignee you are looking for?`,
+        "yes|no",
+        builder.ListStyle.button);
+    },
+    (session, results) => {
+        if(results.response.entity == "yes") {
+            session.endDialog();
+        }
+        else {
+            session.replaceDialog("assignee:ask");
+        }
+    }
+]);
+
 lib.dialog('ask', [
     (session) => {
-        builder.Prompts.text(session,"please list the assignee name");
+        builder.Prompts.text(session,"Please type the assignee name");
     },
     (session, results) => {
         if(results.response) {

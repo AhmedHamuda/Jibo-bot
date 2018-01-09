@@ -45,17 +45,23 @@ lib.dialog('/', [
      },
      (session, args, next) => {
         const subject = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'subject') || undefined;
-        session.conversationData.subject = subject && subject.entity;
-        next();
+        if(subject) {
+            session.beginDialog("subject:confirm", subject.entity);
+        } else {
+            next();
+        }
+     },
+     (session, args, next) => {
+        const assignee = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'assignee') || undefined;
+        if(assignee) {
+            session.beginDialog("assignee:confirm", assignee.entity);
+        } else {
+            next();
+        }
      },
      (session, args, next) => {
         const dueDate = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'duedate') || undefined;
         session.conversationData.dueDate = dueDate && builder.EntityRecognizer.parseTime(dueDate.entity);
-        next();
-     },
-     (session, args, next) => {
-        const assignee = builder.EntityRecognizer.findEntity(session.dialogData.entities, 'assignee') || undefined;
-        session.conversationData.assignee =  assignee && assignee.entity;
         next();
      },
      (session, args, next) => {

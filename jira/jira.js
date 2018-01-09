@@ -52,7 +52,7 @@ module.exports = class Jira extends JiraApi {
     
     parseFilterParams(args) {
         let paramsArray = [];
-        args.subject && paramsArray.push(_s.sprintf("(text ~ '%s*' or project = '%s')", args.subject, args.subject));
+        args.subject && paramsArray.push(_s.sprintf("(text ~ '%s*')", args.subject, args.subject));
         args.assignee && paramsArray.push(_s.sprintf("assignee in (%s)", _.isArray(args.assignee) ? args.assignee.join(",") : args.assignee));
         if(args.project) {
             paramsArray.push(_s.sprintf("project in (%s)",  _.isArray(args.project) ? args.project.join(",") :  args.project));

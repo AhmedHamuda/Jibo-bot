@@ -1,18 +1,25 @@
 "use strict";
+
 class Setup {
-    static checkSetup (session, next) {
-        if (Setup.allowedActions.indexOf(session.message.text) > -1) {
-            next();
-        } else if (session.userData.jira && session.userData.jira.host && session.userData.jira.oauth &&
-             (!session.userData.projects || !session.conversationData.issueTypes ||
-                 !session.conversationData.statuses || !session.conversationData.priorities)) {
-            session.beginDialog("user-profile:setup");
-        } else if(session.message.text.length == 0 && (!session.userData.jira || !session.userData.jira.host || !session.userData.jira.oauth)) {
-            session.beginDialog("user-profile:initiate");
-        } else if(!session.userData.jira || !session.userData.jira.host || !session.userData.jira.oauth) {
-            session.beginDialog("user-profile:initiate", {redo: true});
-        }
-         else {
+    static isAllowed (session, next) {
+        if (process.env.MICROSOFT_APP_ID && process.env.MICROSOFT_APP_PASSWORD) {
+            const conversationId = session.message.address.conversation.id;
+            session.connector.fetchMembers(session.message.address.serviceUrl, conversationId, (err, result) => {
+                if (err) {
+                    console.log("error: %s", err);
+                }
+                else {
+                    let email = result[0].email; // This is a 1:1 chat
+                    let isMember = email.endsWith("@yourdomain.com");
+                    if (isMember) {
+                    next();
+                    }
+                    else {
+                        session.send("Sorry, you should be a member of %s to use me", process.env.ALLOWED_DOMAIN);
+                    }
+                }
+            });
+        } else {
             next();
         }
     }

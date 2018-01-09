@@ -28,8 +28,8 @@ bot.set("storage", storage);
 
 bot.use({
     botbuilder: (session, next) => {
-        next();
         //ManualSupport.SaveUserData(session, next);
+        Setup.isAllowed(session, next);
     },
     send: (event, next) => {
         next();
@@ -62,7 +62,7 @@ bot.dialog('/', intents
             session.conversationData.userAtempts = session.conversationData.userAtempts || 0;
             session.conversationData.userAtempts++;
             */
-            if (fulfillment && fulfillment.entity && fulfillment.entity.length > 0 && session.conversationData.userAtempts < 5) {
+            if (fulfillment && fulfillment.entity && fulfillment.entity.length > 0) {
                 let speech = fulfillment.entity; 
                 session.send(speech); 
             } else {
@@ -134,11 +134,22 @@ bot.library(require('./dialogs/comment').createLibrary());
 //bot.library(require('./dialogs/settings').createLibrary());
 bot.library(require('./dialogs/help').createLibrary());
 bot.on('conversationUpdate', (message) => {
+    const conversationId = message.address.conversation.id;
     if (message.membersAdded) {
         message.membersAdded.forEach((identity) => {
             if (identity.id === message.address.bot.id) {
                 bot.beginDialog(message.address, 'user-profile:initiate', message.address);
             }
+            /*
+            const email = identity.email; // This is a 1:1 chat
+            const isMember = email.endsWith(process.env.ALLOWED_DOMAIN);
+            if (isMember) {
+                
+            }
+            else {
+                bot.send(`Sorry, you should be a member of ${process.env.ALLOWED_DOMAIN} to use me`, message.address);
+            }
+            */
         });
     }
 });

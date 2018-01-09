@@ -47,7 +47,7 @@ lib.dialog('get', [
             const issueNumber = session.dialogData.issueNumber || results.response;
             const issue = await jira.findIssue(issueNumber, "", "issuelinks");
             let issuelinks = issue.fields.issuelinks;
-            if (issuelinks) {
+            if (issuelinks && issuelinks.length > 0) {
                 if(session.conversationData.issueType) {
                     issuelinks = _.filter(issuelinks, (issue) => {
                         if (_.contains(session.conversationData.issueType, issue.inwardIssue.fields.issuetype.name.toLowerCase())) {
@@ -71,7 +71,7 @@ lib.dialog('get', [
                 session.send(msg);
                 session.endDialog("Anything else I can help with?");
             } else {
-                session.send("There is no links for issue %s", issueNumber);
+                session.send("There is issues linked to %s", issueNumber);
             }
         } catch(error) {
             if(error.statusCode == 404) {

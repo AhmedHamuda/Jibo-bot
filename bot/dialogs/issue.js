@@ -5,6 +5,7 @@ const builder = require('botbuilder');
 const Jira = require("../../jira/jira");
 const lib = new builder.Library('issue');
 const _ = require('underscore');
+const helpers = require("../../common/helpers");
 
 lib.dialog('getByKey', [
      (session, args, next) => {
